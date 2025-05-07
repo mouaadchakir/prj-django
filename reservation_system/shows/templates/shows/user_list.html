@@ -1,0 +1,25 @@
+{% extends 'shows/base.html' %}
+{% block title %}User List{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>User List</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>User Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.get_user_type_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

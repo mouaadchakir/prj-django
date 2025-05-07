@@ -1,0 +1,12 @@
+{% extends 'shows/base.html' %}
+{% block title %}{{ show.title }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ show.title }}</h2>
+    <p>{{ show.description }}</p>
+    <p><strong>Date:</strong> {{ show.date }}</p>
+    <p><strong>Location:</strong> {{ show.location }}</p>
+    <p><strong>Price:</strong> {{ show.price }}</p>
+    <a href="{% url 'reservation_create' show.pk %}" class="btn btn-success">Book Now</a>
+</div>
+{% endblock %}

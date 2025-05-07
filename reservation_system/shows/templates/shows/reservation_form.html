@@ -1,0 +1,31 @@
+{% extends 'shows/base.html' %}
+{% block title %}Book {{ show.title }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Book {{ show.title }}</h2>
+    <form action="{% url 'payment' show.pk %}" method="post" id="payment-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="seat_number">Seat Number</label>
+            <input type="text" class="form-control" id="seat_number" name="seat_number" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Reserve</button>
+        <script src="https://js.stripe.com/v3/"></script>
+        <button id="checkout-button" class="btn btn-success">Pay with Stripe</button>
+    </form>
+    <script>
+        var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+        var checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', function () {
+            stripe.redirectToCheckout({
+                sessionId: '{{ session_id }}'
+            }).then(function (result) {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

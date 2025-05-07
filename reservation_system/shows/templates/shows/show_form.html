@@ -1,0 +1,12 @@
+{% extends 'shows/base.html' %}
+{% block title %}Create Show{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Create a New Show</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Create Show</button>
+    </form>
+</div>
+{% endblock %}
