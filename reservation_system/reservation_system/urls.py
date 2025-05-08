@@ -16,16 +16,40 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from shows.views import UserListView, UserCreateView, ShowListView, ShowCreateView, ShowDetailView, ReservationCreateView, PaymentView, PaymentPageView
+from shows.views import (
+    UserListView, UserCreateView,
+    ShowListView, ShowCreateView, ShowDetailView, AdminShowListView,
+    ReservationCreateView, PaymentPageView, PaymentView, PaymentErrorView,
+    ShowUpdateView, ShowDeleteView
+)
 
 urlpatterns = [
+    path('', ShowListView.as_view(), name='home'),
+    # Removed: path('accounts/register/', RegisterView.as_view(), name='register'), 
+    # Removed: path('accounts/login/', CustomLoginView.as_view(), name='login'), 
+
+    # Payment URLs
     path('payment/<int:pk>/', PaymentPageView.as_view(), name='payment_page'),
     path('shows/<int:pk>/payment/', PaymentView.as_view(), name='payment'),
+    
+    # Admin URL
     path('admin/', admin.site.urls),
+     
+    # User URLs
     path('users/', UserListView.as_view(), name='user_list'),
     path('users/create/', UserCreateView.as_view(), name='user_create'),
+
+    # Show URLs
     path('shows/', ShowListView.as_view(), name='show_list'),
+    # ShowCreateView is now public, no login needed as per previous step
     path('shows/create/', ShowCreateView.as_view(), name='show_create'),
+    path('shows/management/', AdminShowListView.as_view(), name='admin_show_list'), 
     path('shows/<int:pk>/', ShowDetailView.as_view(), name='show_detail'),
+    path('shows/<int:pk>/update/', ShowUpdateView.as_view(), name='show_update'), 
+    path('shows/<int:pk>/delete/', ShowDeleteView.as_view(), name='show_delete'), 
     path('shows/<int:pk>/reserve/', ReservationCreateView.as_view(), name='reservation_create'),
+
+    # Django Auth URLs (logout, password change, etc.) are kept for now
+    # If login is truly gone, LOGIN_URL in settings might need adjustment or handling
+    #path('accounts/', include('django.contrib.auth.urls')), 
 ]

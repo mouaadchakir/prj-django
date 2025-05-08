@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'shows',
 ]
 
@@ -55,7 +56,7 @@ ROOT_URLCONF = 'reservation_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [], # <--- Ici
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,3 +140,6 @@ STRIPE_SECRET_KEY = 'your-secret-key'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/'  # Or 'show_list' if you have a named URL for your homepage
+LOGOUT_REDIRECT_URL = '/' # Optional: where to redirect after logout

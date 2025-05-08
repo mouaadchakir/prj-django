@@ -5,10 +5,10 @@
     <h2>Book {{ show.title }}</h2>
     <form action="{% url 'payment' show.pk %}" method="post" id="payment-form">
         {% csrf_token %}
-        <div class="form-group">
+        <!--<div class="form-group">
             <label for="seat_number">Seat Number</label>
             <input type="number" class="form-control" id="seat-countr" name="seat-count" required>
-        </div>
+        </div> -->
         <button type="submit" class="btn btn-primary">Reserve</button>
         <script src="https://js.stripe.com/v3/"></script>
         <button id="checkout-button" class="btn btn-success">Pay with Stripe</button>

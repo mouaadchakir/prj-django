@@ -1,13 +1,42 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.utils import timezone
-from .models import User, Show, Reservation
+from .models import User, Show, Reservation, Seat
 from .forms import UserForm, ShowForm
 import stripe
 from django.conf import settings
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotAllowed
+from functools import wraps
+from django.db.models import Q
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# Decorator to check if user is staff
+def staff_required(view_func):
+    decorated_view_func = login_required(user_passes_test(lambda u: u.is_staff)(view_func))
+    return decorated_view_func
+
+def staff_required_debug(view_func):
+    @wraps(view_func) # Important for preserving view metadata
+    def _wrapped_view(request, *args, **kwargs):
+        print(f"[staff_required_debug] Attempting to access: {request.path}")
+        print(f"[staff_required_debug] Checking user: {request.user}")
+        if not request.user.is_authenticated:
+            print(f"[staff_required_debug] User not authenticated. LOGIN_URL is no longer available. Returning 403.")
+            # Previously: return redirect(settings.LOGIN_URL)
+            return HttpResponseForbidden("Access Denied: You must be authenticated to view this page.")
+        if not request.user.is_staff:
+            print(f"[staff_required_debug] User {request.user} is AUTHENTICATED but NOT staff. Permission denied.")
+            return HttpResponseForbidden("Access Denied: You must be a staff member to view this page.")
+        print(f"[staff_required_debug] User {request.user} is staff. Access granted.")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 # Create your views here.
 
@@ -28,23 +57,70 @@ class UserCreateView(View):
             return redirect('user_list')
         return render(request, 'shows/user_form.html', {'form': form})
 
-class ShowListView(View):
-    def get(self, request):
-        shows = Show.objects.all()  # Temporarily show all shows
-        return render(request, 'shows/show_list.html', {'shows': shows})
+# Remove login_required decorator to make ShowListView public
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
-class ShowDetailView(View):
-    def get(self, request, pk):
-        show = get_object_or_404(Show, pk=pk)
-        return render(request, 'shows/show_detail.html', {'show': show})
+class ShowListView(ListView):
+    model = Show
+    template_name = 'shows/show_list.html'
+    context_object_name = 'shows'
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('date') # Get the original queryset
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(location__icontains=query)
+            ).distinct() # Use distinct() if your OR conditions might lead to duplicates
+        return queryset
+
+class AdminShowListView(ListView):
+    model = Show
+    template_name = 'shows/admin_show_list.html'
+    context_object_name = 'shows'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('-date')
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(location__icontains=query)
+            ).distinct()
+        return queryset
+
+class ShowDetailView(DetailView):
+    model = Show
+    template_name = 'shows/show_detail.html'
+    context_object_name = 'show'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        show = self.get_object()  # Récupère l'objet Show actuel
+
+        # Compter le nombre total de sièges pour ce spectacle
+        total_seats_count = Seat.objects.filter(show=show).count()
+        
+        # Compter le nombre de sièges disponibles (non réservés) pour ce spectacle
+        available_seats_count = Seat.objects.filter(show=show, is_reserved=False).count()
+        
+        context['total_seats_count'] = total_seats_count
+        context['available_seats_count'] = available_seats_count
+        return context
 
 class ShowCreateView(View):
     def get(self, request):
         form = ShowForm()
+        print(f"[ShowCreateView] GET request. User: {request.user}") # Basic log
         return render(request, 'shows/show_form.html', {'form': form})
 
     def post(self, request):
-        form = ShowForm(request.POST)
+        form = ShowForm(request.POST, request.FILES)
+        print(f"[ShowCreateView] POST request. User: {request.user}") # Basic log
         if form.is_valid():
             form.save()
             return redirect('show_list')
@@ -98,3 +174,15 @@ class PaymentView(View):
 class PaymentErrorView(View):
     def get(self, request):
         return render(request, 'shows/payment_error.html')
+
+# Placeholder Views for Update and Delete functionality
+class ShowUpdateView(UpdateView): 
+    model = Show
+    form_class = ShowForm 
+    template_name = 'shows/show_form.html' 
+    success_url = reverse_lazy('admin_show_list')
+
+class ShowDeleteView(DeleteView): 
+    model = Show
+    template_name = 'shows/show_confirm_delete.html' 
+    success_url = reverse_lazy('admin_show_list')

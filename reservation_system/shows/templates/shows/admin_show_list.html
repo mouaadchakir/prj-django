@@ -1,0 +1,66 @@
+{% extends 'shows/base.html' %}
+
+{% block title %}Manage Shows{% endblock %}
+
+{% block search_bar %}
+    <form class="form-inline my-2 my-lg-0 ms-auto" method="GET" action="{% url 'admin_show_list' %}"> {# Changed to ms-auto for Bootstrap 5 #}
+        <input class="form-control me-sm-2" type="search" placeholder="Search Shows" aria-label="Search" name="q" value="{{ request.GET.q }}">
+        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+    </form>
+{% endblock search_bar %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Shows</h2>
+        <a href="{% url 'show_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create New Show</a>
+    </div>
+
+    {% if not shows %}
+        <div class="alert alert-info" role="alert">
+            No shows found matching your criteria or no shows have been created yet.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for show in shows %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ show.title }}</h5>
+                        <p class="card-text"><strong>Date:</strong> {{ show.date|date:"D, d M Y H:i" }}</p>
+                        <p class="card-text"><strong>Location:</strong> {{ show.location }}</p>
+                        <p class="card-text mb-1"><strong>Price:</strong> ${{ show.price|floatformat:2 }}</p>
+                        <p class="card-text text-muted small mb-3"><em>{{ show.description|truncatewords:20 }}</em></p>
+                        
+                        <div class="mt-auto">
+                            <a href="{% url 'show_update' show.pk %}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit"></i> Edit</a>
+                            <a href="{% url 'show_delete' show.pk %}" class="btn btn-danger btn-sm me-1"><i class="fas fa-trash-alt"></i> Delete</a>
+                            <a href="{% url 'show_detail' show.pk %}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&laquo; First</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a></li>
+                    {% endif %}
+
+                    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span></li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Last &raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,21 +1,62 @@
 {% extends 'shows/base.html' %}
-{% block title %}Create Show{% endblock %}
+
+{% block title %}
+    {% if form.instance.pk %}Edit Show{% else %}Create a New Show{% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Create a New Show</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <table class="table">
-            <tbody>
-                {% for field in form %}
-                <tr>
-                    <th>{{ field.label_tag }}</th>
-                    <td>{{ field }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-primary">Create Show</button>
-    </form>
+<div class="container mt-5 mb-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if form.instance.pk %}Edit Show: {{ form.instance.title }}{% else %}Create a New Show{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="row mb-3">
+                                <label for="{{ field.id_for_label }}" class="col-md-3 col-form-label text-md-end">{{ field.label }}</label>
+                                <div class="col-md-9">
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <hr class="my-4">
+
+                        <div class="row">
+                            <div class="col-md-9 offset-md-3">
+                                <button type="submit" class="btn btn-success me-2">
+                                    {% if form.instance.pk %}Save Changes{% else %}Create Show{% endif %}
+                                </button>
+                                <a href="{% url 'show_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

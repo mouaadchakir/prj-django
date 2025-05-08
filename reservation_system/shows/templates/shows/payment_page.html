@@ -1,97 +1,165 @@
 {% extends 'shows/base.html' %}
-{% block title %}Complete Payment{% endblock %}
+{% block title %}Complete Payment - {{ show.title }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Complete Your Payment</h2>
-    <form action="{% url 'payment' show.pk %}" method="post" id="payment-form">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="seat-count">Number of Seats</label>
-            <input type="number" id="seat-count" name="seat_count" value="seat-count" min="1" class="form-control">
+<div class="container mt-5 mb-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Complete Your Payment</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Show:
+                            <strong>{{ show.title }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Date:
+                            <span>{{ show.date|date:"D, d M Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Location:
+                            <span>{{ show.location }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Price per seat:
+                            <span>${{ show.price|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+
+                    <hr class="my-4">
+
+                    <h5 class="card-title">Payment Details</h5>
+                    <form action="{% url 'payment' show.pk %}" method="post" id="payment-form">
+                        {% csrf_token %}
+                        <div class="form-row align-items-end">
+                            <div class="form-group col-md-6">
+                                <label for="seat-count">Number of Seats</label>
+                                <input type="number" id="seat-count" name="seat_count" value="1" min="1" class="form-control">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Total Price</label>
+                                <div><strong id="total-price-display" style="font-size: 1.2em;">$0.00</strong></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="card-element">Credit or Debit Card</label>
+                            <div id="card-element" class="form-control" style="padding: .75rem .75rem;"></div>
+                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                        </div>
+                        
+                        <div class="text-muted small mt-2 mb-3">
+                            <i class="fas fa-lock"></i> Secure payment processing by Stripe.
+                        </div>
+
+                        <button class="btn btn-success btn-lg btn-block mt-4" id="submit-button">
+                            <span id="button-text">Pay Now</span>
+                            <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-outline-secondary btn-lg btn-block mt-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="total-price">Total Price</label>
-            <input type="text" id="total-price" class="form-control" readonly>
-        </div>
-        <div class="form-group">
-            <label for="card-element">Credit or debit card</label>
-            <div id="card-element"><!-- A Stripe Element will be inserted here. --></div>
-            <div id="card-errors" role="alert"></div>
-        </div>
-        <button class="btn btn-primary">Submit Payment</button>
-    </form>
-    <script src="https://js.stripe.com/v3/"></script>
-    <script>
-        var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
-        var elements = stripe.elements();
-
-        var style = {
-            base: {
-                color: '#32325d',
-                fontFamily: 'Arial, sans-serif',
-                fontSmoothing: 'antialiased',
-                fontSize: '16px',
-                '::placeholder': {
-                    color: '#aab7c4'
-                }
-            },
-            invalid: {
-                color: '#fa755a',
-                iconColor: '#fa755a'
-            }
-        };
-
-        var card = elements.create('card', {style: style});
-        card.mount('#card-element');
-
-        card.addEventListener('change', function(event) {
-            var displayError = document.getElementById('card-errors');
-            if (event.error) {
-                displayError.textContent = event.error.message;               
-            } else {
-                displayError.textContent = '';
-                
-            }
-        });
-
-        var form = document.getElementById('payment-form');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            stripe.createToken(card).then(function(result) {
-                if (result.error) {
-                    var errorElement = document.getElementById('card-errors');
-                    errorElement.textContent = result.error.message;
-                } else {
-                    stripeTokenHandler(result.token);
-                }
-            });
-        });
-
-        function stripeTokenHandler(token) {
-            var form = document.getElementById('payment-form');
-            var hiddenInput = document.createElement('input');
-            hiddenInput.setAttribute('type', 'hidden');
-            hiddenInput.setAttribute('name', 'stripeToken');
-            hiddenInput.setAttribute('value', token.id);
-            form.appendChild(hiddenInput);
-
-            form.submit();
-        }
-
-        // Calculate total price
-        var seatCountInput = document.getElementById('seat-count');
-        var totalPriceInput = document.getElementById('total-price');
-        var pricePerSeat = {{ show.price|floatformat:2 }};
-
-        function updateTotalPrice() {
-            var seatCount = parseInt(seatCountInput.value);
-            var totalPrice = seatCount * pricePerSeat;
-            totalPriceInput.value = totalPrice.toFixed(2);
-        }
-
-        seatCountInput.addEventListener('input', updateTotalPrice);
-        updateTotalPrice();
-    </script>
+    </div>
 </div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+    var elements = stripe.elements();
+
+    var style = {
+        base: {
+            color: '#32325d',
+            fontFamily: 'Arial, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+        }
+    };
+
+    var card = elements.create('card', {style: style});
+    card.mount('#card-element');
+
+    card.on('change', function(event) {
+        var displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+
+    var form = document.getElementById('payment-form');
+    var submitButton = document.getElementById('submit-button');
+    var buttonText = document.getElementById('button-text');
+    var spinner = document.getElementById('spinner');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        submitButton.disabled = true;
+        buttonText.classList.add('d-none');
+        spinner.classList.remove('d-none');
+
+        stripe.createToken(card).then(function(result) {
+            if (result.error) {
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+                submitButton.disabled = false;
+                buttonText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+            } else {
+                stripeTokenHandler(result.token);
+            }
+        }).catch(function(){
+            // Handle other errors (e.g., network issues)
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = 'An unexpected error occurred. Please try again.';
+            submitButton.disabled = false;
+            buttonText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+        });
+    });
+
+    function stripeTokenHandler(token) {
+        var hiddenTokenInput = document.createElement('input');
+        hiddenTokenInput.setAttribute('type', 'hidden');
+        hiddenTokenInput.setAttribute('name', 'stripeToken');
+        hiddenTokenInput.setAttribute('value', token.id);
+        form.appendChild(hiddenTokenInput);
+
+        // Ensure seat_count is submitted with the form
+        // The seat_count input is already part of the form with name="seat_count"
+
+        form.submit();
+    }
+
+    // Calculate total price
+    var seatCountInput = document.getElementById('seat-count');
+    var totalPriceDisplay = document.getElementById('total-price-display'); // Changed to target the span
+    var pricePerSeat = parseFloat('{{ show.price|stringformat:".2f" }}'); // Ensure price is float
+
+    function updateTotalPrice() {
+        var seatCount = parseInt(seatCountInput.value) || 0;
+        var totalPrice = seatCount * pricePerSeat;
+        totalPriceDisplay.textContent = "$" + totalPrice.toFixed(2); // Update textContent of the span
+    }
+
+    seatCountInput.addEventListener('input', updateTotalPrice);
+    seatCountInput.addEventListener('change', updateTotalPrice); // Also update on change (e.g. spinner interaction)
+    // Initial calculation
+    updateTotalPrice();
+</script>
 {% endblock %}

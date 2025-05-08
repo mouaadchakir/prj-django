@@ -1,18 +1,38 @@
 {% extends 'shows/base.html' %}
+
 {% block title %}Upcoming Shows{% endblock %}
+
+{% block search_bar %}
+    {# This form should be styled to fit the navbar, possibly with ml-auto or similar #}
+    <form class="form-inline my-2 my-lg-0 ml-auto" method="GET" action="{% url 'show_list' %}">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search Shows" aria-label="Search" name="q" value="{{ request.GET.q }}">
+        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+    </form>
+{% endblock search_bar %}
+
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Upcoming Shows</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Upcoming Shows</h2>
+    </div>
     <div class="row">
         {% for show in shows %}
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
+                
                 <div class="card-body">
                     <h5 class="card-title">{{ show.title }}</h5>
-                    <p class="card-text"><strong>Date:</strong> {{ show.date }}</p>
+                    <p class="card-text"><strong>Date:</strong> {{ show.date|date:"D, d M Y H:i" }}</p>
                     <p class="card-text"><strong>Location:</strong> {{ show.location }}</p>
-                    <p class="card-text"><strong>Price:</strong> {{ show.price }}</p>
-                    <a href="{% url 'show_detail' show.pk %}" class="btn btn-primary"><i class="fas fa-info-circle"></i> View Details</a>
+                    <p class="card-text"><strong>Price:</strong> ${{ show.price|floatformat:2 }}</p>
+                    {% if user.is_authenticated and user.is_superuser %}
+                        <a href="{% url 'show_update' show.pk %}" class="btn btn-warning btn-sm me-2"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="{% url 'show_delete' show.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i> Delete</a>
+                        {# Optionally, still show view details button or integrate its content elsewhere #}
+                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-info btn-sm mt-2 d-block"><i class="fas fa-info-circle"></i> View Details</a>
+                    {% else %}
+                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-primary"><i class="fas fa-info-circle"></i> View Details</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

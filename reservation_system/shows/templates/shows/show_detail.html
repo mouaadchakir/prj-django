@@ -1,12 +1,55 @@
 {% extends 'shows/base.html' %}
-{% block title %}{{ show.title }}{% endblock %}
+{% load humanize %} {# On pourrait utiliser humanize pour les nombres/dates si besoin, mais date suffit ici #}
+
+{% block title %}{{ show.title }} - Détails du Spectacle{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>{{ show.title }}</h2>
-    <p>{{ show.description }}</p>
-    <p><strong>Date:</strong> {{ show.date }}</p>
-    <p><strong>Location:</strong> {{ show.location }}</p>
-    <p><strong>Price:</strong> {{ show.price }}</p>
-    <a href="{% url 'reservation_create' show.pk %}" class="btn btn-success">Book Now</a>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                {# Vous pourriez ajouter une image ici si votre modèle Show avait un champ ImageField #}
+                {# <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}"> #}
+                
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ show.title }}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <p class="card-text fs-5">{{ show.description }}</p>
+                    
+                    <hr>
+                    
+                    <h5 class="card-subtitle mb-3 text-muted">Détails de l'événement :</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-alt me-2"></i> <!-- Supposant Font Awesome -->
+                            <strong>Date et Heure :</strong> {{ show.date|date:"d F Y à H:i" }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-map-marker-alt me-2"></i> <!-- Supposant Font Awesome -->
+                            <strong>Lieu :</strong> {{ show.location }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-dollar-sign me-2"></i> <!-- Supposant Font Awesome -->
+                            <strong>Prix :</strong> {{ show.price|floatformat:2 }} € 
+                        </li>
+                    </ul>
+
+                    <hr> 
+                    {# <!-- Ici, on pourrait afficher un plan des sièges ou une liste plus détaillée --> #}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                        <a href="{% url 'reservation_create' show.pk %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-ticket-alt me-1"></i> Réserver Maintenant
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted small">
+                    ID du spectacle : {{ show.pk }}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
