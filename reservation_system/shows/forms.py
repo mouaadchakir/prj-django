@@ -10,3 +10,7 @@ class ShowForm(forms.ModelForm):
     class Meta:
         model = Show
         fields = ['title', 'description', 'date', 'location', 'price']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 2, 'cols': 40}),
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }

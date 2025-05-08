@@ -15,7 +15,7 @@ class User(models.Model):
 
 class Show(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(max_length=500)
     date = models.DateTimeField()
     location = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)

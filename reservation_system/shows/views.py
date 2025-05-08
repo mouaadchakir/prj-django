@@ -69,6 +69,11 @@ class ReservationCreateView(View):
         )
         return redirect('show_list')
 
+class PaymentPageView(View):
+    def get(self, request, pk):
+        show = get_object_or_404(Show, pk=pk)
+        return render(request, 'shows/payment_page.html', {'show': show, 'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY})
+
 class PaymentView(View):
     def post(self, request, pk):
         show = get_object_or_404(Show, pk=pk)
@@ -82,8 +87,13 @@ class PaymentView(View):
             )
             # Logic to mark reservation as paid
             return redirect('show_list')
-        except stripe.error.StripeError:
-            return redirect('payment_error')
+        except stripe.error.StripeError as e:
+            # Instead of redirecting to payment_error, render the payment page with an error message
+            return render(request, 'shows/payment_page.html', {
+                'show': show,
+                'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
+                'error_message': str(e)
+            })
 
 class PaymentErrorView(View):
     def get(self, request):

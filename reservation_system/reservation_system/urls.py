@@ -16,16 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from shows.views import UserListView, UserCreateView, ShowListView, ShowCreateView, ShowDetailView, ReservationCreateView, PaymentView, PaymentErrorView
+from shows.views import UserListView, UserCreateView, ShowListView, ShowCreateView, ShowDetailView, ReservationCreateView, PaymentView, PaymentPageView
 
 urlpatterns = [
-    path('payment/error/', PaymentErrorView.as_view(), name='payment_error'),
+    path('payment/<int:pk>/', PaymentPageView.as_view(), name='payment_page'),
     path('shows/<int:pk>/payment/', PaymentView.as_view(), name='payment'),
     path('admin/', admin.site.urls),
     path('users/', UserListView.as_view(), name='user_list'),
     path('users/create/', UserCreateView.as_view(), name='user_create'),
     path('shows/', ShowListView.as_view(), name='show_list'),
+    path('shows/create/', ShowCreateView.as_view(), name='show_create'),
     path('shows/<int:pk>/', ShowDetailView.as_view(), name='show_detail'),
     path('shows/<int:pk>/reserve/', ReservationCreateView.as_view(), name='reservation_create'),
-    path('shows/create/', ShowCreateView.as_view(), name='show_create'),
 ]
