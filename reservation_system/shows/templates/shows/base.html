@@ -5,10 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Reservation System{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Reservation System</a>
+        {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <a class="navbar-brand" href="{% url 'admin_show_list' %}">Reservation System</a>
+            {% else %}
+                <a class="navbar-brand" href="{% url 'show_list' %}">Reservation System</a>
+            {% endif %}
+        {% else %}
+            <a class="navbar-brand" href="{% url 'login' %}">Reservation System</a>
+        {% endif %}
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -16,29 +25,42 @@
             <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'show_create' %}">Create Show</a>
+                        <li class="nav-item {% if request.resolver_match.url_name == 'admin_show_list' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'admin_show_list' %}"><i class="fas fa-tasks"></i> Manage Shows</a>
                         </li>
+                        <li class="nav-item {% if request.resolver_match.url_name == 'show_create' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'show_create' %}"><i class="fas fa-plus-circle"></i> Create Show</a>
+                        </li>
+                        {# Add other staff-specific links here if needed #}
                     {% else %}
-                        <li class="nav-item active">
-                            <a class="nav-link" href="{% url 'show_list' %}">Shows <span class="sr-only">(current)</span></a>
+                        <li class="nav-item {% if request.resolver_match.url_name == 'show_list' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'show_list' %}"><i class="fas fa-film"></i> Shows</a>
                         </li>
+                        <li class="nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'my_bookings' %}"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+                        </li>
+                        {# Add other spectator-specific links here if needed #}
                     {% endif %}
                 {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <span class="navbar-text">Hello, {{ user.username }}!</span>
+                        <span class="navbar-text mr-3">Hello, {{ user.username }}!</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link btn btn-link" style="display: inline; cursor: pointer;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </form>
                     </li>
-                    {% if user.is_staff %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'show_create' %}">Create Show</a>
-                        </li>
-                    {% endif %}
+                {% else %}
+                    <li class="nav-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    </li>
+                    <li class="nav-item {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                    </li>
                 {% endif %}
             </ul>
             {% block search_bar %}
@@ -49,8 +71,23 @@
     <div class="container mt-5">
         {% block content %}{% endblock %}
     </div>
+
+    <footer class="bg-dark text-white text-center p-3 mt-auto">
+        <p class="mb-0">&copy; {% now "Y" %} Reservation System. All Rights Reserved.</p>
+    </footer>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            flex: 1;
+        }
+    </style>
 </body>
 </html>

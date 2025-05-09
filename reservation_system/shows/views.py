@@ -2,18 +2,19 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.utils import timezone
 from .models import User, Show, Reservation, Seat
-from .forms import UserForm, ShowForm
+from .forms import CustomUserCreationForm, ShowForm
 import stripe
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotAllowed
 from functools import wraps
 from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.hashers import make_password, check_password
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -47,19 +48,51 @@ class UserListView(View):
 
 class UserCreateView(View):
     def get(self, request):
-        form = UserForm()
-        return render(request, 'shows/user_form.html', {'form': form})
+        form = CustomUserCreationForm()
+        return render(request, 'registration/register.html', {'form': form})
 
     def post(self, request):
-        form = UserForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
-        return render(request, 'shows/user_form.html', {'form': form})
+            return redirect('login') # Assurez-vous que l'URL 'login' est définie
+        return render(request, 'registration/register.html', {'form': form})
 
 # Remove login_required decorator to make ShowListView public
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'registration/login.html')
+
+    def post(self, request):
+        username_or_email = request.POST.get('username_or_email')
+        password = request.POST.get('password')
+        error_message = None
+
+        try:
+            user = None
+            if '@' in username_or_email:
+                user = User.objects.get(email=username_or_email)
+            else:
+                user = User.objects.get(username=username_or_email)
+
+            if user and check_password(password, user.password):
+                auth_login(request, user) # Gère la session pour l'utilisateur
+                
+                # Redirection basée sur user_type
+                if user.user_type == 'admin' or user.user_type == 'organizer':
+                    return redirect('admin_show_list') 
+                else: # 'spectator'
+                    return redirect('show_list') 
+            else:
+                error_message = "Nom d'utilisateur/email ou mot de passe incorrect."
+        except User.DoesNotExist:
+            error_message = "Nom d'utilisateur/email ou mot de passe incorrect."
+        
+        return render(request, 'registration/login.html', {'error_message': error_message, 'username_or_email': username_or_email})
+
+@method_decorator(login_required, name='dispatch')
 class ShowListView(ListView):
     model = Show
     template_name = 'shows/show_list.html'
@@ -76,6 +109,7 @@ class ShowListView(ListView):
             ).distinct() # Use distinct() if your OR conditions might lead to duplicates
         return queryset
 
+@method_decorator(staff_required, name='dispatch')
 class AdminShowListView(ListView):
     model = Show
     template_name = 'shows/admin_show_list.html'
@@ -112,6 +146,7 @@ class ShowDetailView(DetailView):
         context['available_seats_count'] = available_seats_count
         return context
 
+@method_decorator(staff_required, name='dispatch')
 class ShowCreateView(View):
     def get(self, request):
         form = ShowForm()
@@ -175,13 +210,14 @@ class PaymentErrorView(View):
     def get(self, request):
         return render(request, 'shows/payment_error.html')
 
-# Placeholder Views for Update and Delete functionality
+@method_decorator(staff_required, name='dispatch')
 class ShowUpdateView(UpdateView): 
     model = Show
     form_class = ShowForm 
     template_name = 'shows/show_form.html' 
     success_url = reverse_lazy('admin_show_list')
 
+@method_decorator(staff_required, name='dispatch')
 class ShowDeleteView(DeleteView): 
     model = Show
     template_name = 'shows/show_confirm_delete.html' 

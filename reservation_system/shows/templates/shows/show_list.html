@@ -19,7 +19,15 @@
         {% for show in shows %}
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
-                
+                {% if show.image %}
+                    <a href="{% url 'show_detail' show.pk %}">
+                        <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}" style="height: 200px; object-fit: cover;">
+                    </a>
+                {% else %}
+                    <a href="{% url 'show_detail' show.pk %}">
+                        <img src="https://via.placeholder.com/400x200.png?text={{ show.title|urlencode }}" class="card-img-top" alt="{{ show.title }}" style="height: 200px; object-fit: cover;">
+                    </a>
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ show.title }}</h5>
                     <p class="card-text"><strong>Date:</strong> {{ show.date|date:"D, d M Y H:i" }}</p>

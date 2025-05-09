@@ -16,17 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 from shows.views import (
     UserListView, UserCreateView,
     ShowListView, ShowCreateView, ShowDetailView, AdminShowListView,
     ReservationCreateView, PaymentPageView, PaymentView, PaymentErrorView,
-    ShowUpdateView, ShowDeleteView
+    ShowUpdateView, ShowDeleteView, LoginView
 )
 
 urlpatterns = [
     path('', ShowListView.as_view(), name='home'),
-    # Removed: path('accounts/register/', RegisterView.as_view(), name='register'), 
-    # Removed: path('accounts/login/', CustomLoginView.as_view(), name='login'), 
+    path('accounts/register/', UserCreateView.as_view(), name='register'), 
+    path('accounts/login/', LoginView.as_view(), name='login'), 
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'), 
 
     # Payment URLs
     path('payment/<int:pk>/', PaymentPageView.as_view(), name='payment_page'),
@@ -53,3 +57,7 @@ urlpatterns = [
     # If login is truly gone, LOGIN_URL in settings might need adjustment or handling
     #path('accounts/', include('django.contrib.auth.urls')), 
 ]
+
+# Serve media files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
