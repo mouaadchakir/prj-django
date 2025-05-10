@@ -8,14 +8,12 @@
     <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8">
             <div class="card shadow-sm">
-                {% if show.image %}
-                    <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}" style="max-height: 400px; object-fit: cover;">
-                {% endif %}
+                {# Vous pourriez ajouter une image ici si votre modèle Show avait un champ ImageField #}
+                {# <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}"> #}
                 
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">{{ show.title }}</h3>
                 </div>
-                
                 <div class="card-body">
                     <p class="card-text fs-5">{{ show.description }}</p>
                     
@@ -35,7 +33,6 @@
                             <i class="fas fa-dollar-sign me-2"></i> <!-- Supposant Font Awesome -->
                             <strong>Prix :</strong> {{ show.price|floatformat:2 }} € 
                         </li>
-                        
                     </ul>
 
                     <hr> 
