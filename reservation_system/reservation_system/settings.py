@@ -134,7 +134,7 @@ EMAIL_HOST = 'smtp.example.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mouaadchk2000@gmail.com'
-EMAIL_HOST_PASSWORD = 'mqhq mrax famm dfac'
+EMAIL_HOST_PASSWORD = 'mqhq mrax famm cafd'
 DEFAULT_FROM_EMAIL = 'webmaster@example.com'
 
 # Stripe settings
