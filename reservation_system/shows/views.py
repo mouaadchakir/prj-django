@@ -1,19 +1,21 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.utils import timezone
 from .models import User, Show, Reservation, Seat
-from .forms import CustomUserCreationForm, ShowForm
+from .forms import CustomUserCreationForm, ShowForm, UserProfileForm
 import stripe
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotAllowed
 from functools import wraps
 from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.hashers import make_password, check_password
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -222,3 +224,59 @@ class ShowDeleteView(DeleteView):
     model = Show
     template_name = 'shows/show_confirm_delete.html' 
     success_url = reverse_lazy('admin_show_list')
+
+# User Profile View
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    # Get user's reservations
+    user_reservations = Reservation.objects.filter(user=request.user).order_by('-reservation_date')
+    
+    # Get upcoming and past reservations
+    now = timezone.now()
+    upcoming_reservations = user_reservations.filter(show__date__gt=now)
+    past_reservations = user_reservations.filter(show__date__lte=now)
+    
+    # Count statistics
+    stats = {
+        'total_reservations': user_reservations.count(),
+        'upcoming_reservations': upcoming_reservations.count(),
+        'past_reservations': past_reservations.count(),
+        'total_spent': sum(r.show.price for r in user_reservations if hasattr(r, 'show') and r.show),
+    }
+    
+    context = {
+        'form': form,
+        'user_reservations': user_reservations,
+        'upcoming_reservations': upcoming_reservations,
+        'past_reservations': past_reservations,
+        'stats': stats,
+        'active_tab': request.GET.get('tab', 'profile')
+    }
+    
+    return render(request, 'shows/profile.html', context)
+
+# Password Change View
+@login_required
+def password_change_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            # Update the session to prevent the user from being logged out
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, form.user)
+            messages.success(request, 'Your password has been changed successfully!')
+            return redirect('profile')
+    else:
+        form = PasswordChangeForm(user=request.user)
+    
+    return render(request, 'shows/password_change.html', {'form': form})

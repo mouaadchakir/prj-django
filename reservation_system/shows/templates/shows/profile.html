@@ -1,0 +1,254 @@
+{% extends 'shows/base.html' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block search_bar %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Left column with user info and stats -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ user.username }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <!-- User avatar -->
+                    <div class="mb-4">
+                        <img src="https://ui-avatars.com/api/?name={{ user.first_name|urlencode }}+{{ user.last_name|urlencode }}&background=random&size=128" 
+                             class="rounded-circle img-thumbnail" alt="{{ user.username }}">
+                    </div>
+                    
+                    <!-- User info -->
+                    <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <p><small>Membre depuis {{ user.date_joined|date:"F Y" }}</small></p>
+                    
+                    <!-- User stats -->
+                    <div class="list-group mt-4 text-left">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Réservations
+                            <span class="badge badge-primary badge-pill">{{ stats.total_reservations }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            À venir
+                            <span class="badge badge-success badge-pill">{{ stats.upcoming_reservations }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Passées
+                            <span class="badge badge-secondary badge-pill">{{ stats.past_reservations }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Total dépensé
+                            <span class="badge badge-info badge-pill">{{ stats.total_spent|floatformat:2 }} €</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right column with tabs -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="profileTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_tab == 'profile' %}active{% endif %}" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">
+                                <i class="fas fa-user"></i> Profil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_tab == 'reservations' %}active{% endif %}" id="reservations-tab" data-toggle="tab" href="#reservations" role="tab" aria-controls="reservations" aria-selected="false">
+                                <i class="fas fa-ticket-alt"></i> Réservations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_tab == 'settings' %}active{% endif %}" id="settings-tab" data-toggle="tab" href="#settings" role="tab" aria-controls="settings" aria-selected="false">
+                                <i class="fas fa-cog"></i> Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body">
+                    <div class="tab-content" id="profileTabsContent">
+                        <!-- Profile Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'profile' %}show active{% endif %}" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <h4 class="mb-4">Informations personnelles</h4>
+                            
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="form-group row">
+                                    <label for="{{ form.username.id_for_label }}" class="col-md-4 col-form-label text-md-right">Nom d'utilisateur</label>
+                                    <div class="col-md-8">
+                                        {{ form.username }}
+                                        {% if form.username.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.username.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="{{ form.email.id_for_label }}" class="col-md-4 col-form-label text-md-right">Email</label>
+                                    <div class="col-md-8">
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.email.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="{{ form.first_name.id_for_label }}" class="col-md-4 col-form-label text-md-right">Prénom</label>
+                                    <div class="col-md-8">
+                                        {{ form.first_name }}
+                                        {% if form.first_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.first_name.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="{{ form.last_name.id_for_label }}" class="col-md-4 col-form-label text-md-right">Nom</label>
+                                    <div class="col-md-8">
+                                        {{ form.last_name }}
+                                        {% if form.last_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.last_name.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mb-0">
+                                    <div class="col-md-8 offset-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Enregistrer les modifications
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Reservations Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'reservations' %}show active{% endif %}" id="reservations" role="tabpanel" aria-labelledby="reservations-tab">
+                            <h4 class="mb-4">Mes réservations</h4>
+                            
+                            <!-- Upcoming Reservations -->
+                            <h5 class="text-primary"><i class="fas fa-calendar-alt"></i> Spectacles à venir</h5>
+                            {% if upcoming_reservations %}
+                                <div class="list-group mb-4">
+                                    {% for reservation in upcoming_reservations %}
+                                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">{{ reservation.show.title }}</h5>
+                                                <small>{{ reservation.reservation_date|date:"d/m/Y" }}</small>
+                                            </div>
+                                            <p class="mb-1">
+                                                <strong>Date:</strong> {{ reservation.show.date|date:"d/m/Y H:i" }}<br>
+                                                <strong>Lieu:</strong> {{ reservation.show.location }}<br>
+                                                <strong>Prix:</strong> {{ reservation.show.price|floatformat:2 }} €
+                                            </p>
+                                            <div class="mt-2">
+                                                <a href="{% url 'show_detail' reservation.show.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-info-circle"></i> Détails
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Vous n'avez pas de réservations à venir.</p>
+                            {% endif %}
+                            
+                            <!-- Past Reservations -->
+                            <h5 class="text-secondary"><i class="fas fa-history"></i> Spectacles passés</h5>
+                            {% if past_reservations %}
+                                <div class="list-group">
+                                    {% for reservation in past_reservations %}
+                                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">{{ reservation.show.title }}</h5>
+                                                <small>{{ reservation.reservation_date|date:"d/m/Y" }}</small>
+                                            </div>
+                                            <p class="mb-1">
+                                                <strong>Date:</strong> {{ reservation.show.date|date:"d/m/Y H:i" }}<br>
+                                                <strong>Lieu:</strong> {{ reservation.show.location }}<br>
+                                                <strong>Prix:</strong> {{ reservation.show.price|floatformat:2 }} €
+                                            </p>
+                                            <div class="mt-2">
+                                                <a href="{% url 'show_detail' reservation.show.id %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-info-circle"></i> Détails
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Vous n'avez pas de réservations passées.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Settings Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                            <h4 class="mb-4">Paramètres du compte</h4>
+                            
+                            <div class="list-group">
+                                <a href="{% url 'password_change' %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1"><i class="fas fa-key"></i> Changer mon mot de passe</h5>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                    <p class="mb-1">Modifiez votre mot de passe pour sécuriser votre compte.</p>
+                                </a>
+                                
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1"><i class="fas fa-bell"></i> Notifications</h5>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notificationsSwitch" checked>
+                                            <label class="custom-control-label" for="notificationsSwitch"></label>
+                                        </div>
+                                    </div>
+                                    <p class="mb-1">Recevoir des notifications par email pour les nouveaux spectacles.</p>
+                                </div>
+                                
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1"><i class="fas fa-language"></i> Langue</h5>
+                                        <select class="form-control form-control-sm" style="width: auto;">
+                                            <option selected>Français</option>
+                                            <option>English</option>
+                                            <option>Español</option>
+                                        </select>
+                                    </div>
+                                    <p class="mb-1">Choisissez la langue de l'interface.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

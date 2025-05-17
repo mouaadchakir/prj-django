@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from .models import User, Show
 
 class CustomUserCreationForm(UserCreationForm):
@@ -29,6 +29,18 @@ class CustomUserCreationForm(UserCreationForm):
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
     #     self.fields['email'].required = True
+
+class UserProfileForm(forms.ModelForm):
+    """Form for updating user profile information"""
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
 
 class ShowForm(forms.ModelForm):
     class Meta:

@@ -23,7 +23,7 @@ from shows.views import (
     UserListView, UserCreateView,
     ShowListView, ShowCreateView, ShowDetailView, AdminShowListView,
     ReservationCreateView, PaymentPageView, PaymentView, PaymentErrorView,
-    ShowUpdateView, ShowDeleteView, LoginView
+    ShowUpdateView, ShowDeleteView, LoginView, profile_view, password_change_view
 )
 
 urlpatterns = [
@@ -31,6 +31,8 @@ urlpatterns = [
     path('accounts/register/', UserCreateView.as_view(), name='register'), 
     path('accounts/login/', LoginView.as_view(), name='login'), 
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'), 
+    path('accounts/profile/', profile_view, name='profile'), 
+    path('accounts/password_change/', password_change_view, name='password_change'), 
 
     # Payment URLs
     path('payment/<int:pk>/', PaymentPageView.as_view(), name='payment_page'),
