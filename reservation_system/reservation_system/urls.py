@@ -23,7 +23,8 @@ from shows.views import (
     UserListView, UserCreateView,
     ShowListView, ShowCreateView, ShowDetailView, AdminShowListView,
     ReservationCreateView, PaymentPageView, PaymentView, PaymentErrorView,
-    ShowUpdateView, ShowDeleteView, LoginView, profile_view, password_change_view
+    ShowUpdateView, ShowDeleteView, LoginView, profile_view, password_change_view,
+    ticket_view, generate_demo_tickets, my_bookings, download_ticket_pdf
 )
 
 urlpatterns = [
@@ -54,6 +55,12 @@ urlpatterns = [
     path('shows/<int:pk>/update/', ShowUpdateView.as_view(), name='show_update'), 
     path('shows/<int:pk>/delete/', ShowDeleteView.as_view(), name='show_delete'), 
     path('shows/<int:pk>/reserve/', ReservationCreateView.as_view(), name='reservation_create'),
+
+    # Ticket URLs
+    path('my-bookings/', my_bookings, name='my_bookings'),
+    path('tickets/<int:reservation_id>/', ticket_view, name='view_ticket'),
+    path('tickets/<int:reservation_id>/download/', download_ticket_pdf, name='download_ticket'),
+    path('generate-tickets/', generate_demo_tickets, name='generate_tickets'),
 
     # Django Auth URLs (logout, password change, etc.) are kept for now
     # If login is truly gone, LOGIN_URL in settings might need adjustment or handling

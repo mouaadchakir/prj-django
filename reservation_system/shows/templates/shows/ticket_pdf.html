@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket - {{ reservation.show.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .ticket {
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        .ticket-header {
+            background-color: #4e73df;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .ticket-content {
+            padding: 20px;
+        }
+        .show-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            margin-bottom: 10px;
+        }
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 100px;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .concert { background-color: #17a2b8; color: white; }
+        .theatre { background-color: #dc3545; color: white; }
+        .cinema { background-color: #343a40; color: white; }
+        .comedy { background-color: #ffc107; color: black; }
+        .dance { background-color: #007bff; color: white; }
+        .other { background-color: #6c757d; color: white; }
+        
+        .ticket-footer {
+            border-top: 1px solid #eee;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #666;
+            background-color: #f8f9fc;
+        }
+        .qr-code {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .note {
+            font-size: 12px;
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .two-cols {
+            display: flex;
+            justify-content: space-between;
+        }
+        .col-left {
+            width: 65%;
+        }
+        .col-right {
+            width: 30%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="ticket-header">
+            <h1>ShowTime</h1>
+            <div>N° {{ reservation.id }}</div>
+        </div>
+        
+        <div class="ticket-content">
+            <div class="two-cols">
+                <div class="col-left">
+                    <div class="show-title">{{ reservation.show.title }}</div>
+                    
+                    <!-- Catégorie avec style approprié -->
+                    {% if reservation.show.category == 'concert' %}
+                        <div class="category-badge concert">Concert</div>
+                    {% elif reservation.show.category == 'theatre' %}
+                        <div class="category-badge theatre">Théâtre</div>
+                    {% elif reservation.show.category == 'cinema' %}
+                        <div class="category-badge cinema">Cinéma</div>
+                    {% elif reservation.show.category == 'comedy' %}
+                        <div class="category-badge comedy">Comédie</div>
+                    {% elif reservation.show.category == 'dance' %}
+                        <div class="category-badge dance">Danse</div>
+                    {% else %}
+                        <div class="category-badge other">Autre</div>
+                    {% endif %}
+                    
+                    <div class="info-row">
+                        <span class="label">Date :</span> {{ reservation.show.date|date:"l d F Y" }}
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">Heure :</span> {{ reservation.show.date|date:"H:i" }}
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">Lieu :</span> {{ reservation.show.location }}
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">Siège :</span> 
+                        {% if reservation.seat.row %}
+                            {{ reservation.seat.row }}-{{ reservation.seat.number }} ({{ reservation.seat.category }})
+                        {% else %}
+                            {{ reservation.seat.seat_number }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">Nom :</span> {{ reservation.user.first_name }} {{ reservation.user.last_name }}
+                    </div>
+                    
+                    <div class="note">
+                        Ce billet est personnel et ne peut être revendu. Présentez-le à l'entrée le jour du spectacle.
+                    </div>
+                </div>
+                
+                <div class="col-right">
+                    {% if reservation.show.image %}
+                        <img src="{{ reservation.show.image.url }}" alt="{{ reservation.show.title }}" style="max-width: 100%; max-height: 150px;">
+                    {% endif %}
+                    
+                    <div class="qr-code">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=reservation-{{ reservation.id }}-{{ reservation.show.id }}" 
+                             alt="QR Code" style="width: 150px; height: 150px;">
+                        <div style="margin-top: 5px; font-size: 12px;">Scannez pour vérifier</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ticket-footer">
+            <div style="display: flex; justify-content: space-between;">
+                <div>Réservation #{{ reservation.id }}</div>
+                <div>{{ reservation.reservation_date|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
+        <p>Merci d'arriver au moins 30 minutes avant le début du spectacle.</p>
+        <p>Ce billet est valable uniquement pour la date et l'heure indiquées.</p>
+        <p>Pour toute question, contactez notre service client à support@showtime.com.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{% extends 'shows/base.html' %}
+{% load static %}
+
+{% block title %}Votre billet - {{ reservation.show.title }}{% endblock %}
+
+{% block search_bar %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Fil d'Ariane -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-light p-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="{% url 'show_list' %}">Spectacles</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'show_detail' reservation.show.pk %}">{{ reservation.show.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Billet</li>
+                </ol>
+            </nav>
+
+            <!-- Options d'action -->
+            <div class="d-flex justify-content-between mb-4">
+                <button class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="fas fa-print mr-2"></i> Imprimer
+                </button>
+                <a href="{% url 'download_ticket' reservation.id %}" class="btn btn-outline-success">
+                    <i class="fas fa-download mr-2"></i> Télécharger PDF
+                </a>
+            </div>
+
+            <!-- Ticket -->
+            <div id="ticket" class="card border-0 shadow-lg rounded-lg overflow-hidden mb-4">
+                <div class="card-header bg-primary text-white p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-ticket-alt mr-2"></i> 
+                            ShowTime
+                        </h4>
+                        <div class="ticket-number">
+                            № {{ reservation.id }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="font-weight-bold mb-3">{{ reservation.show.title }}</h5>
+                            
+                            <!-- Catégorie du spectacle avec icône -->
+                            {% if reservation.show.category == 'concert' %}
+                                <div class="mb-3"><span class="badge badge-info p-2"><i class="fas fa-music mr-1"></i> Concert</span></div>
+                            {% elif reservation.show.category == 'theatre' %}
+                                <div class="mb-3"><span class="badge badge-danger p-2"><i class="fas fa-theater-masks mr-1"></i> Théâtre</span></div>
+                            {% elif reservation.show.category == 'cinema' %}
+                                <div class="mb-3"><span class="badge badge-dark p-2"><i class="fas fa-film mr-1"></i> Cinéma</span></div>
+                            {% elif reservation.show.category == 'comedy' %}
+                                <div class="mb-3"><span class="badge badge-warning p-2"><i class="fas fa-laugh mr-1"></i> Comédie</span></div>
+                            {% elif reservation.show.category == 'dance' %}
+                                <div class="mb-3"><span class="badge badge-primary p-2"><i class="fas fa-running mr-1"></i> Danse</span></div>
+                            {% endif %}
+                            
+                            <!-- Informations du spectacle -->
+                            <div class="info-item d-flex align-items-center mb-2">
+                                <div class="icon-container mr-3">
+                                    <i class="far fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>Date :</strong> {{ reservation.show.date|date:"l d F Y" }}
+                                </div>
+                            </div>
+                            
+                            <div class="info-item d-flex align-items-center mb-2">
+                                <div class="icon-container mr-3">
+                                    <i class="far fa-clock text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>Heure :</strong> {{ reservation.show.date|date:"H:i" }}
+                                </div>
+                            </div>
+                            
+                            <div class="info-item d-flex align-items-center mb-2">
+                                <div class="icon-container mr-3">
+                                    <i class="fas fa-map-marker-alt text-danger"></i>
+                                </div>
+                                <div>
+                                    <strong>Lieu :</strong> {{ reservation.show.location }}
+                                </div>
+                            </div>
+                            
+                            <div class="info-item d-flex align-items-center mb-2">
+                                <div class="icon-container mr-3">
+                                    <i class="fas fa-chair text-success"></i>
+                                </div>
+                                <div>
+                                    <strong>Siège :</strong> {{ reservation.seat.row }}-{{ reservation.seat.number }} ({{ reservation.seat.category }})
+                                </div>
+                            </div>
+
+                            <div class="info-item d-flex align-items-center mb-4">
+                                <div class="icon-container mr-3">
+                                    <i class="fas fa-user text-info"></i>
+                                </div>
+                                <div>
+                                    <strong>Réservé pour :</strong> {{ reservation.user.first_name }} {{ reservation.user.last_name }}
+                                </div>
+                            </div>
+
+                            <div class="alert alert-success p-2">
+                                <small>
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Ce billet est personnel et ne peut être revendu. Présentez-le à l'entrée le jour du spectacle.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            {% if reservation.show.image %}
+                                <img src="{{ reservation.show.image.url }}" alt="{{ reservation.show.title }}" class="img-fluid rounded mb-3" style="max-height: 150px;">
+                            {% endif %}
+                            
+                            <!-- QR Code (simulation) -->
+                            <div class="qr-code border p-2 d-inline-block rounded bg-white">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=reservation-{{ reservation.id }}-{{ reservation.show.id }}" 
+                                     alt="QR Code" class="img-fluid">
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">Scannez pour vérifier</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Réservation #{{ reservation.id }}</small>
+                        </div>
+                        <div>
+                            <small class="text-muted">{{ reservation.reservation_date|date:"d/m/Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations supplémentaires -->
+            <div class="card shadow-sm rounded-lg mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-info-circle text-primary mr-2"></i> Informations importantes</h5>
+                    <ul class="mb-0 pl-4">
+                        <li class="mb-2">Merci d'arriver au moins 30 minutes avant le début du spectacle.</li>
+                        <li class="mb-2">Ce billet est valable uniquement pour la date et l'heure indiquées.</li>
+                        <li>Pour toute question, contactez notre service client à support@showtime.com.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #ticket, #ticket * {
+            visibility: visible;
+        }
+        #ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            box-shadow: none !important;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+    
+    .icon-container {
+        width: 20px;
+        text-align: center;
+    }
+    
+    .ticket-number {
+        font-family: monospace;
+        font-size: 1.2em;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}

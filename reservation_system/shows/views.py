@@ -4,6 +4,9 @@ from django.utils import timezone
 from .models import User, Show, Reservation, Seat
 from .forms import CustomUserCreationForm, ShowForm, UserProfileForm
 import stripe
+import random
+import string
+import datetime
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -11,12 +14,17 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponse
 from functools import wraps
 from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.hashers import make_password, check_password
+
+# Pour la génération des PDF
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -280,3 +288,121 @@ def password_change_view(request):
         form = PasswordChangeForm(user=request.user)
     
     return render(request, 'shows/password_change.html', {'form': form})
+
+
+# Ticket Views
+@login_required
+def ticket_view(request, reservation_id):
+    """
+    Affiche le ticket pour une réservation spécifique
+    """
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    return render(request, 'shows/ticket.html', {'reservation': reservation})
+
+
+@login_required
+def generate_demo_tickets(request):
+    """
+    Génère 10 tickets de démonstration avec différentes catégories
+    """
+    if not request.user.is_authenticated:
+        messages.error(request, "Vous devez être connecté pour générer des tickets.")
+        return redirect('login')
+    
+    # Récupérer tous les spectacles
+    shows = Show.objects.all()
+    if not shows.exists():
+        messages.error(request, "Aucun spectacle n'est disponible pour générer des tickets.")
+        return redirect('show_list')
+    
+    # Liste des catégories pour les démonstrations
+    categories = ['concert', 'theatre', 'cinema', 'comedy', 'dance']
+    
+    # Générer 10 tickets de démonstration
+    created_reservations = []
+    for i in range(10):
+        # Sélectionner un spectacle aléatoire
+        show = random.choice(shows)
+        
+        # S'assurer que le spectacle a une catégorie définie
+        if not hasattr(show, 'category') or not show.category:
+            # Si la catégorie n'existe pas, en assigner une aléatoire
+            category = random.choice(categories)
+            show.category = category
+            show.save()
+        
+        # Créer ou récupérer un siège disponible
+        seat_row = random.choice(['A', 'B', 'C', 'D', 'E'])
+        seat_number = random.randint(1, 30)
+        seat_category = random.choice(['Standard', 'Premium', 'VIP'])
+        
+        # Créer un siège s'il n'existe pas déjà
+        seat, created = Seat.objects.get_or_create(
+            show=show,
+            seat_number=f"{seat_row}-{seat_number}",
+            defaults={'is_reserved': False}
+        )
+        
+        # Ajouter des attributs supplémentaires au siège
+        if not hasattr(seat, 'row'):
+            seat.row = seat_row
+        if not hasattr(seat, 'number'):
+            seat.number = seat_number
+        if not hasattr(seat, 'category'):
+            seat.category = seat_category
+        
+        # Marquer le siège comme réservé
+        seat.is_reserved = True
+        seat.save()
+        
+        # Créer la réservation
+        reservation_date = timezone.now() - datetime.timedelta(days=random.randint(0, 30))
+        
+        reservation = Reservation.objects.create(
+            user=request.user,
+            show=show,
+            seat=seat,
+            reservation_date=reservation_date,
+            payment_confirmed=True
+        )
+        
+        created_reservations.append(reservation)
+    
+    messages.success(request, f"10 tickets de démonstration ont été générés avec succès!")
+    
+    # Rediriger vers la page des réservations (my_bookings)
+    return redirect('my_bookings')
+
+
+@login_required
+def my_bookings(request):
+    """
+    Affiche toutes les réservations de l'utilisateur connecté
+    """
+    reservations = Reservation.objects.filter(user=request.user).order_by('-reservation_date')
+    return render(request, 'shows/my_bookings.html', {'reservations': reservations})
+
+
+@login_required
+def download_ticket_pdf(request, reservation_id):
+    """
+    Génère et télécharge un ticket au format PDF
+    """
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
+    # Rendu du template HTML en chaîne
+    template = get_template('shows/ticket_pdf.html')
+    context = {'reservation': reservation, 'MEDIA_URL': settings.MEDIA_URL}
+    html = template.render(context)
+    
+    # Création du PDF à partir du HTML
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        filename = f"ticket_{reservation.id}_{reservation.show.title}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse('Erreur lors de la génération du PDF', status=400)

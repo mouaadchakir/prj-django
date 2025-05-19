@@ -19,12 +19,22 @@ class User(AbstractUser):
         return self.username
 
 class Show(models.Model):
+    CATEGORY_CHOICES = [
+        ('concert', 'Concert'),
+        ('theatre', 'Théâtre'),
+        ('cinema', 'Cinéma'),
+        ('comedy', 'Comédie'),
+        ('dance', 'Danse'),
+        ('other', 'Autre'),
+    ]
+    
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=500)
-    image = models.ImageField(upload_to='show_images/', null=True, blank=True) # Added image field
+    image = models.ImageField(upload_to='show_images/', null=True, blank=True)
     date = models.DateTimeField()
     location = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
 
     def __str__(self):
         return self.title

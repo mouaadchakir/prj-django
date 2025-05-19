@@ -1,67 +1,162 @@
 {% extends 'shows/base.html' %}
-{% block title %}Complete Payment - {{ show.title }}{% endblock %}
+{% load static %}
+
+{% block title %}Paiement - {{ show.title }}{% endblock %}
+
+{% block search_bar %}{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="row d-flex justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Complete Your Payment</h4>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Fil d'Ariane -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-light p-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="{% url 'show_list' %}">Spectacles</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'show_detail' show.pk %}">{{ show.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Paiement</li>
+                </ol>
+            </nav>
+
+            <!-- Carte principale -->
+            <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-credit-card mr-2"></i> Finaliser votre paiement</h4>
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title">Order Summary</h5>
-                    <ul class="list-group list-group-flush mb-4">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Show:
-                            <strong>{{ show.title }}</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Date:
-                            <span>{{ show.date|date:"D, d M Y H:i" }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Location:
-                            <span>{{ show.location }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Price per seat:
-                            <span>${{ show.price|floatformat:2 }}</span>
-                        </li>
+                
+                <div class="card-body p-4">
+                    
+
+                    <!-- Premier onglet: Détails de la réservation -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white rounded-circle p-2 mr-2" style="width: 32px; height: 32px; text-align: center; line-height: 1;">
+                                <small>1</small>
+                            </div>
+                            <h5 class="mb-0">Détails de votre réservation</h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body p-3">
+                                        <h6 class="font-weight-bold">{{ show.title }}</h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="far fa-calendar-alt text-primary mr-2"></i>
+                                            <span>{{ show.date|date:"l d F Y" }} à {{ show.date|date:"H:i" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-map-marker-alt text-danger mr-2"></i>
+                                            <span>{{ show.location }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {% if show.image %}
+                                <img src="{{ show.image.url }}" alt="{{ show.title }}" class="img-fluid rounded" style="max-height: 150px; width: 100%; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light rounded p-5 text-center text-muted">
+                                    <i class="fas fa-image fa-3x mb-3"></i>
+                                    <p>Aucune image disponible</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deuxième onglet: Paiement -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white rounded-circle p-2 mr-2" style="width: 32px; height: 32px; text-align: center; line-height: 1;">
+                                <small>2</small>
+                            </div>
+                            <h5 class="mb-0">Détails du paiement</h5>
+                        </div>
+
+                        <form action="{% url 'payment' show.pk %}" method="post" id="payment-form" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="seat-count" class="form-label">Nombre de places</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <button class="btn btn-outline-secondary" type="button" id="decrease-seats">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="number" id="seat-count" name="seat_count" value="1" min="1" max="10" class="form-control text-center" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" id="increase-seats">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">Maximum 10 places par réservation</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Prix unitaire</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" value="{{ show.price|floatformat:2 }} €" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 mb-0">Total à payer:</span>
+                                    <span class="h4 mb-0 text-primary" id="total-price-display">0,00 €</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="card-element" class="form-label">Carte de crédit/débit</label>
+                                <div id="card-element" class="form-control p-3 bg-light"></div>
+                                <div id="card-errors" role="alert" class="text-danger mt-2 small"></div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center text-muted mb-4">
+                                <i class="fas fa-lock mr-2"></i>
+                                <small>Paiement sécurisé via Stripe. Vos données de paiement sont chiffrées et sécurisées.</small>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-3">
+                                    <a href="{% url 'show_detail' show.pk %}" class="btn btn-outline-secondary btn-lg btn-block">
+                                        <i class="fas fa-arrow-left mr-2"></i> Retour
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <button type="submit" class="btn btn-success btn-lg btn-block" id="submit-button">
+                                        <span id="button-text"><i class="fas fa-lock mr-1"></i> Payer maintenant</span>
+                                        <span id="spinner" class="spinner-border spinner-border-sm ml-2 d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                       
+                        <span class="text-muted small">Protection par Stripe, leader mondial du paiement sécurisé</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations complémentaires -->
+            <div class="card mt-4 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="mb-3"><i class="fas fa-info-circle text-primary mr-2"></i> Informations importantes</h5>
+                    <ul class="mb-0 pl-4">
+                        <li class="mb-2">Les billets vous seront envoyés par email après confirmation du paiement.</li>
+                        <li class="mb-2">En cas d'annulation de l'événement, vous serez intégralement remboursé.</li>
+                        <li>Pour toute question, contactez notre service client à support@showtime.com.</li>
                     </ul>
-
-                    <hr class="my-4">
-
-                    <h5 class="card-title">Payment Details</h5>
-                    <form action="{% url 'payment' show.pk %}" method="post" id="payment-form">
-                        {% csrf_token %}
-                        <div class="form-row align-items-end">
-                            <div class="form-group col-md-6">
-                                <label for="seat-count">Number of Seats</label>
-                                <input type="number" id="seat-count" name="seat_count" value="1" min="1" class="form-control">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>Total Price</label>
-                                <div><strong id="total-price-display" style="font-size: 1.2em;">$0.00</strong></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mt-3">
-                            <label for="card-element">Credit or Debit Card</label>
-                            <div id="card-element" class="form-control" style="padding: .75rem .75rem;"></div>
-                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
-                        </div>
-                        
-                        <div class="text-muted small mt-2 mb-3">
-                            <i class="fas fa-lock"></i> Secure payment processing by Stripe.
-                        </div>
-
-                        <button class="btn btn-success btn-lg btn-block mt-4" id="submit-button">
-                            <span id="button-text">Pay Now</span>
-                            <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        </button>
-                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-outline-secondary btn-lg btn-block mt-2">Cancel</a>
-                    </form>
                 </div>
             </div>
         </div>
@@ -70,96 +165,139 @@
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-    var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
-    var elements = stripe.elements();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Stripe initialization
+        var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+        var elements = stripe.elements();
 
-    var style = {
-        base: {
-            color: '#32325d',
-            fontFamily: 'Arial, sans-serif',
-            fontSmoothing: 'antialiased',
-            fontSize: '16px',
-            '::placeholder': {
-                color: '#aab7c4'
+        // Custom styling for the card element
+        var style = {
+            base: {
+                color: '#495057',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                },
+                iconColor: '#6772e5'
+            },
+            invalid: {
+                color: '#dc3545',
+                iconColor: '#dc3545'
             }
-        },
-        invalid: {
-            color: '#fa755a',
-            iconColor: '#fa755a'
-        }
-    };
+        };
 
-    var card = elements.create('card', {style: style});
-    card.mount('#card-element');
-
-    card.on('change', function(event) {
-        var displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-
-    var form = document.getElementById('payment-form');
-    var submitButton = document.getElementById('submit-button');
-    var buttonText = document.getElementById('button-text');
-    var spinner = document.getElementById('spinner');
-
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        submitButton.disabled = true;
-        buttonText.classList.add('d-none');
-        spinner.classList.remove('d-none');
-
-        stripe.createToken(card).then(function(result) {
-            if (result.error) {
-                var errorElement = document.getElementById('card-errors');
-                errorElement.textContent = result.error.message;
-                submitButton.disabled = false;
-                buttonText.classList.remove('d-none');
-                spinner.classList.add('d-none');
-            } else {
-                stripeTokenHandler(result.token);
-            }
-        }).catch(function(){
-            // Handle other errors (e.g., network issues)
-            var errorElement = document.getElementById('card-errors');
-            errorElement.textContent = 'An unexpected error occurred. Please try again.';
-            submitButton.disabled = false;
-            buttonText.classList.remove('d-none');
-            spinner.classList.add('d-none');
+        // Create and mount the card element
+        var card = elements.create('card', {
+            style: style,
+            hidePostalCode: true
         });
+        card.mount('#card-element');
+
+        // Handle real-time validation errors
+        card.on('change', function(event) {
+            var displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> ' + event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission
+        var form = document.getElementById('payment-form');
+        var submitButton = document.getElementById('submit-button');
+        var buttonText = document.getElementById('button-text');
+        var spinner = document.getElementById('spinner');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Disable the submit button to prevent repeated clicks
+            submitButton.disabled = true;
+            buttonText.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Traitement en cours...';
+            spinner.classList.remove('d-none');
+
+            // Create a token
+            stripe.createToken(card).then(function(result) {
+                if (result.error) {
+                    // Display error
+                    var errorElement = document.getElementById('card-errors');
+                    errorElement.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> ' + result.error.message;
+                    
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                    buttonText.innerHTML = '<i class="fas fa-lock mr-1"></i> Payer maintenant';
+                    spinner.classList.add('d-none');
+                } else {
+                    // Send the token to your server
+                    stripeTokenHandler(result.token);
+                }
+            }).catch(function(error){
+                // Handle unexpected errors
+                var errorElement = document.getElementById('card-errors');
+                errorElement.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Une erreur est survenue. Veuillez réessayer.';
+                
+                // Re-enable the submit button
+                submitButton.disabled = false;
+                buttonText.innerHTML = '<i class="fas fa-lock mr-1"></i> Payer maintenant';
+                spinner.classList.add('d-none');
+            });
+        });
+
+        // Submit the form with the token ID
+        function stripeTokenHandler(token) {
+            // Insert the token ID into the form so it gets submitted to the server
+            var hiddenTokenInput = document.createElement('input');
+            hiddenTokenInput.setAttribute('type', 'hidden');
+            hiddenTokenInput.setAttribute('name', 'stripeToken');
+            hiddenTokenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenTokenInput);
+
+            // Submit the form
+            form.submit();
+        }
+
+        // Handle seat count controls
+        var seatCountInput = document.getElementById('seat-count');
+        var totalPriceDisplay = document.getElementById('total-price-display');
+        var pricePerSeat = parseFloat('{{ show.price|stringformat:".2f" }}');
+        var decreaseBtn = document.getElementById('decrease-seats');
+        var increaseBtn = document.getElementById('increase-seats');
+
+        function updateTotalPrice() {
+            var seatCount = parseInt(seatCountInput.value) || 0;
+            var totalPrice = seatCount * pricePerSeat;
+            totalPriceDisplay.textContent = totalPrice.toFixed(2) + ' €';
+            
+            // Update buttons state
+            decreaseBtn.disabled = seatCount <= 1;
+            increaseBtn.disabled = seatCount >= 10;
+        }
+
+        // Add event listeners for seat count controls
+        decreaseBtn.addEventListener('click', function() {
+            var currentValue = parseInt(seatCountInput.value) || 0;
+            if (currentValue > 1) {
+                seatCountInput.value = currentValue - 1;
+                updateTotalPrice();
+            }
+        });
+
+        increaseBtn.addEventListener('click', function() {
+            var currentValue = parseInt(seatCountInput.value) || 0;
+            if (currentValue < 10) {
+                seatCountInput.value = currentValue + 1;
+                updateTotalPrice();
+            }
+        });
+
+        seatCountInput.addEventListener('input', updateTotalPrice);
+        seatCountInput.addEventListener('change', updateTotalPrice);
+        
+        // Initialize total price
+        updateTotalPrice();
     });
-
-    function stripeTokenHandler(token) {
-        var hiddenTokenInput = document.createElement('input');
-        hiddenTokenInput.setAttribute('type', 'hidden');
-        hiddenTokenInput.setAttribute('name', 'stripeToken');
-        hiddenTokenInput.setAttribute('value', token.id);
-        form.appendChild(hiddenTokenInput);
-
-        // Ensure seat_count is submitted with the form
-        // The seat_count input is already part of the form with name="seat_count"
-
-        form.submit();
-    }
-
-    // Calculate total price
-    var seatCountInput = document.getElementById('seat-count');
-    var totalPriceDisplay = document.getElementById('total-price-display'); // Changed to target the span
-    var pricePerSeat = parseFloat('{{ show.price|stringformat:".2f" }}'); // Ensure price is float
-
-    function updateTotalPrice() {
-        var seatCount = parseInt(seatCountInput.value) || 0;
-        var totalPrice = seatCount * pricePerSeat;
-        totalPriceDisplay.textContent = "$" + totalPrice.toFixed(2); // Update textContent of the span
-    }
-
-    seatCountInput.addEventListener('input', updateTotalPrice);
-    seatCountInput.addEventListener('change', updateTotalPrice); // Also update on change (e.g. spinner interaction)
-    // Initial calculation
-    updateTotalPrice();
 </script>
 {% endblock %}

@@ -1,50 +1,325 @@
 {% extends 'shows/base.html' %}
+{% load static %}
 
-{% block title %}Upcoming Shows{% endblock %}
+{% block title %}Découvrez nos spectacles{% endblock %}
 
 {% block search_bar %}
-    {# This form should be styled to fit the navbar, possibly with ml-auto or similar #}
     <form class="form-inline my-2 my-lg-0 ml-auto" method="GET" action="{% url 'show_list' %}">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search Shows" aria-label="Search" name="q" value="{{ request.GET.q }}">
-        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+        <input class="form-control mr-sm-2" type="search" placeholder="Rechercher un spectacle..." aria-label="Search" name="q" value="{{ request.GET.q }}">
+        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">
+            <i class="fas fa-search"></i> Rechercher
+        </button>
     </form>
 {% endblock search_bar %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Upcoming Shows</h2>
-    </div>
-    <div class="row">
-        {% for show in shows %}
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                {% if show.image %}
-                    <a href="{% url 'show_detail' show.pk %}">
-                        <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}" style="height: 200px; object-fit: cover;">
-                    </a>
+    <!-- Hero Section -->
+    <div class="jumbotron bg-light rounded p-4 mb-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="display-4">Découvrez nos spectacles</h1>
+                <p class="lead">Explorez notre sélection de spectacles et réservez vos places dès maintenant.</p>
+                {% if request.user.is_authenticated %}
+                <p>Bonjour {{ request.user.first_name|default:request.user.username }}, trouvez votre prochain spectacle !</p>
                 {% else %}
-                    <a href="{% url 'show_detail' show.pk %}">
-                        <img src="https://via.placeholder.com/400x200.png?text={{ show.title|urlencode }}" class="card-img-top" alt="{{ show.title }}" style="height: 200px; object-fit: cover;">
-                    </a>
+                <p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">Connectez-vous</a> pour réserver vos places.
+                </p>
                 {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ show.title }}</h5>
-                    <p class="card-text"><strong>Date:</strong> {{ show.date|date:"D, d M Y H:i" }}</p>
-                    <p class="card-text"><strong>Location:</strong> {{ show.location }}</p>
-                    <p class="card-text"><strong>Price:</strong> ${{ show.price|floatformat:2 }}</p>
-                    {% if user.is_authenticated and user.is_superuser %}
-                        <a href="{% url 'show_update' show.pk %}" class="btn btn-warning btn-sm me-2"><i class="fas fa-edit"></i> Edit</a>
-                        <a href="{% url 'show_delete' show.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i> Delete</a>
-                        {# Optionally, still show view details button or integrate its content elsewhere #}
-                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-info btn-sm mt-2 d-block"><i class="fas fa-info-circle"></i> View Details</a>
-                    {% else %}
-                        <a href="{% url 'show_detail' show.pk %}" class="btn btn-primary"><i class="fas fa-info-circle"></i> View Details</a>
-                    {% endif %}
+            </div>
+            <div class="col-md-4 d-none d-md-block text-right">
+                <i class="fas fa-ticket-alt fa-5x text-primary opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'show_list' %}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="date_from">Du</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="date_to">Au</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request.GET.date_to }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="category">Catégorie</label>
+                        <div class="category-filter mb-2">
+                            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                                <label class="btn btn-outline-primary {% if not request.GET.category %}active{% endif %}">
+                                    <input type="radio" name="category" value="" {% if not request.GET.category %}checked{% endif %}> 
+                                    <i class="fas fa-globe-africa"></i> Tous
+                                </label>
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'concert' %}active{% endif %}">
+                                    <input type="radio" name="category" value="concert" {% if request.GET.category == 'concert' %}checked{% endif %}> 
+                                    <i class="fas fa-music"></i> Concerts
+                                </label>
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'theatre' %}active{% endif %}">
+                                    <input type="radio" name="category" value="theatre" {% if request.GET.category == 'theatre' %}checked{% endif %}> 
+                                    <i class="fas fa-theater-masks"></i> Théâtre
+                                </label>
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'cinema' %}active{% endif %}">
+                                    <input type="radio" name="category" value="cinema" {% if request.GET.category == 'cinema' %}checked{% endif %}> 
+                                    <i class="fas fa-film"></i> Cinéma
+                                </label>
+                            </div>
+                            <div class="btn-group btn-group-toggle w-100 mt-2" data-toggle="buttons">
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'comedy' %}active{% endif %}">
+                                    <input type="radio" name="category" value="comedy" {% if request.GET.category == 'comedy' %}checked{% endif %}> 
+                                    <i class="fas fa-laugh"></i> Comédie
+                                </label>
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'dance' %}active{% endif %}">
+                                    <input type="radio" name="category" value="dance" {% if request.GET.category == 'dance' %}checked{% endif %}> 
+                                    <i class="fas fa-running"></i> Danse
+                                </label>
+                                <label class="btn btn-outline-primary {% if request.GET.category == 'other' %}active{% endif %}">
+                                    <input type="radio" name="category" value="other" {% if request.GET.category == 'other' %}checked{% endif %}> 
+                                    <i class="fas fa-star"></i> Autres
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="price_min">Prix min</label>
+                        <input type="number" class="form-control" id="price_min" name="price_min" placeholder="0" min="0" value="{{ request.GET.price_min }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="price_max">Prix max</label>
+                        <input type="number" class="form-control" id="price_max" name="price_max" placeholder="100" min="0" value="{{ request.GET.price_max }}">
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Shows Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-calendar-alt text-primary"></i> 
+            {% if request.GET.q %}
+                Résultats pour "{{ request.GET.q }}"
+            {% else %}
+                Spectacles à venir
+            {% endif %}
+        </h2>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-secondary active" id="grid-view">
+                <i class="fas fa-th"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="list-view">
+                <i class="fas fa-list"></i>
+            </button>
+        </div>
+    </div>
+    
+    {% if shows %}
+    <div class="row" id="shows-grid">
+        {% for show in shows %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                {% if show.image %}
+                <img src="{{ show.image.url }}" class="card-img-top" alt="{{ show.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="text-center p-5 bg-light">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                    <p class="mt-2 text-muted">Image non disponible</p>
+                </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ show.title }}</h5>
+                        {% if show.category == 'concert' %}
+                            <span class="badge badge-info"><i class="fas fa-music"></i> Concert</span>
+                        {% elif show.category == 'theatre' %}
+                            <span class="badge badge-danger"><i class="fas fa-theater-masks"></i> Théâtre</span>
+                        {% elif show.category == 'cinema' %}
+                            <span class="badge badge-dark"><i class="fas fa-film"></i> Cinéma</span>
+                        {% elif show.category == 'comedy' %}
+                            <span class="badge badge-warning"><i class="fas fa-laugh"></i> Comédie</span>
+                        {% elif show.category == 'dance' %}
+                            <span class="badge badge-primary"><i class="fas fa-running"></i> Danse</span>
+                        {% else %}
+                            <span class="badge badge-secondary"><i class="fas fa-star"></i> Autre</span>
+                        {% endif %}
+                    </div>
+                    <p class="card-text text-muted mb-2">{{ show.description|truncatewords:15 }}</p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="far fa-calendar-alt text-primary"></i> {{ show.date|date:"d/m/Y H:i" }}</span>
+                            <span class="badge badge-primary">{{ show.price|floatformat:2 }} €</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-map-marker-alt text-secondary"></i> {{ show.location }}</span>
+                            {% if show.available_seats > 0 %}
+                                <span class="badge badge-success">{{ show.available_seats }} places</span>
+                            {% else %}
+                                <span class="badge badge-danger">Complet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{% url 'show_detail' show.pk %}" class="btn btn-primary btn-block">
+                        <i class="fas fa-ticket-alt"></i> Voir le détail
+                    </a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
+
+    <div class="list-group d-none" id="shows-list">
+        {% for show in shows %}
+        <a href="{% url 'show_detail' show.pk %}" class="list-group-item list-group-item-action mb-2 rounded shadow-sm">
+            <div class="row">
+                <div class="col-md-2">
+                    {% if show.image %}
+                    <img src="{{ show.image.url }}" alt="{{ show.title }}" class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
+                    {% else %}
+                    <div class="text-center p-4 bg-light rounded">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-7">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h5 class="mb-0">{{ show.title }}</h5>
+                        {% if show.category == 'concert' %}
+                            <span class="badge badge-info"><i class="fas fa-music"></i> Concert</span>
+                        {% elif show.category == 'theatre' %}
+                            <span class="badge badge-danger"><i class="fas fa-theater-masks"></i> Théâtre</span>
+                        {% elif show.category == 'cinema' %}
+                            <span class="badge badge-dark"><i class="fas fa-film"></i> Cinéma</span>
+                        {% elif show.category == 'comedy' %}
+                            <span class="badge badge-warning"><i class="fas fa-laugh"></i> Comédie</span>
+                        {% elif show.category == 'dance' %}
+                            <span class="badge badge-primary"><i class="fas fa-running"></i> Danse</span>
+                        {% else %}
+                            <span class="badge badge-secondary"><i class="fas fa-star"></i> Autre</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-1 text-muted">{{ show.description|truncatewords:20 }}</p>
+                    <div class="small">
+                        <span class="mr-3"><i class="far fa-calendar-alt text-primary"></i> {{ show.date|date:"d/m/Y H:i" }}</span>
+                        <span><i class="fas fa-map-marker-alt text-secondary"></i> {{ show.location }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3 text-right">
+                    <h5 class="text-primary">{{ show.price|floatformat:2 }} €</h5>
+                    {% if show.available_seats > 0 %}
+                        <span class="badge badge-success">{{ show.available_seats }} places</span>
+                    {% else %}
+                        <span class="badge badge-danger">Complet</span>
+                    {% endif %}
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary">Détails <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if shows.has_other_pages %}
+    <div class="mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if shows.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ shows.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.price_min %}&price_min={{ request.GET.price_min }}{% endif %}{% if request.GET.price_max %}&price_max={{ request.GET.price_max }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for i in shows.paginator.page_range %}
+                    {% if shows.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.price_min %}&price_min={{ request.GET.price_min }}{% endif %}{% if request.GET.price_max %}&price_max={{ request.GET.price_max }}{% endif %}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if shows.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ shows.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.price_min %}&price_min={{ request.GET.price_min }}{% endif %}{% if request.GET.price_max %}&price_max={{ request.GET.price_max }}{% endif %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="py-5 text-center">
+        <div class="mb-4">
+            <i class="fas fa-search fa-4x text-muted"></i>
+        </div>
+        <h4>Aucun spectacle trouvé</h4>
+        {% if request.GET.q or request.GET.category or request.GET.date_from or request.GET.date_to or request.GET.price_min or request.GET.price_max %}
+            <p class="text-muted">Aucun spectacle ne correspond à vos critères de recherche.</p>
+            <a href="{% url 'show_list' %}" class="btn btn-outline-primary mt-3">
+                <i class="fas fa-undo"></i> Réinitialiser les filtres
+            </a>
+        {% else %}
+            <p class="text-muted">Il n'y a actuellement aucun spectacle programmé.</p>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.hover-card {
+    transition: transform 0.3s ease;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle between grid and list view
+        const gridView = document.getElementById('grid-view');
+        const listView = document.getElementById('list-view');
+        const showsGrid = document.getElementById('shows-grid');
+        const showsList = document.getElementById('shows-list');
+        
+        if (gridView && listView && showsGrid && showsList) {
+            gridView.addEventListener('click', function() {
+                gridView.classList.add('active');
+                listView.classList.remove('active');
+                showsGrid.classList.remove('d-none');
+                showsList.classList.add('d-none');
+            });
+            
+            listView.addEventListener('click', function() {
+                listView.classList.add('active');
+                gridView.classList.remove('active');
+                showsList.classList.remove('d-none');
+                showsGrid.classList.add('d-none');
+            });
+        }
+    });
+</script>
 {% endblock %}

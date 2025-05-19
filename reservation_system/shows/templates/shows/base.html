@@ -52,7 +52,11 @@
                 {% if user.is_authenticated %}
                     <!-- Shows link only visible to authenticated users -->
                     <li class="nav-item {% if request.resolver_match.url_name == 'show_list' %}active{% endif %}">
-                        <a class="nav-link" href="{% url 'show_list' %}"><i class="fas fa-film"></i> Shows</a>
+                        <a class="nav-link" href="{% url 'show_list' %}"><i class="fas fa-film"></i> Spectacles</a>
+                    </li>
+                    <!-- My Bookings link for authenticated users -->
+                    <li class="nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'my_bookings' %}"><i class="fas fa-ticket-alt"></i> Mes réservations</a>
                     </li>
                     {% if user.is_staff %}
                         <!-- Staff/Admin specific links -->
