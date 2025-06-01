@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport Technique - Système de Réservation</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <style>
+        @media print {
+            .section, .page-break {
+                page-break-after: always;
+            }
+            .no-print-break {
+                page-break-inside: avoid;
+            }
+            body {
+                font-size: 12pt;
+            }
+            h1 {
+                font-size: 22pt;
+            }
+            h2 {
+                font-size: 18pt;
+            }
+            h3 {
+                font-size: 16pt;
+            }
+            pre {
+                font-size: 10pt;
+            }
+            .header, .footer {
+                position: fixed;
+                width: 100%;
+            }
+            .header {
+                top: 0;
+            }
+            .footer {
+                bottom: 0;
+            }
+            .content {
+                margin-top: 120px;
+                margin-bottom: 80px;
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eaecef;
+        }
+        h3 {
+            margin-top: 1.5rem;
+        }
+        .section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+        .comparison-table th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .feature-box {
+            border-left: 4px solid #007bff;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            background-color: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+        .architecture-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 25px 0;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .pros {
+            color: #28a745;
+        }
+        .cons {
+            color: #dc3545;
+        }
+        .code-block {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .note-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning-box {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .img-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        .img-caption {
+            font-style: italic;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .toc-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 15px;
+        }
+        .toc ul li {
+            margin-bottom: 8px;
+        }
+        .toc ul li a {
+            color: #495057;
+            text-decoration: none;
+        }
+        .toc ul li a:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #e9ecef;
+            padding-left: 15px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .term-definition {
+            margin-bottom: 15px;
+        }
+        .term-definition dt {
+            font-weight: 600;
+            color: #343a40;
+        }
+        .term-definition dd {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        .page-number {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 30px;
+        }
+        .checklist li {
+            margin-bottom: 10px;
+        }
+        .checklist li:before {
+            content: '✓';
+            color: #28a745;
+            padding-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header text-center">
+        <div class="container">
+            <h1><i class="fas fa-ticket-alt"></i> Rapport Technique: Système de Réservation</h1>
+            <p class="lead">Analyse d'architecture et comparaison des frameworks</p>
+            <p class="text-white">Mouaad Chakir | Projet Final - Développement Web 2025</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Table des matières -->
+        <div class="section">
+            <div class="toc">
+                <div class="toc-title"><i class="fas fa-list"></i> Table des matières</div>
+                <ul>
+                    <li><a href="#introduction">1. Introduction</a></li>
+                    <li>
+                        <a href="#architecture">2. Description détaillée de l'architecture</a>
+                        <ul>
+                            <li><a href="#architecture-globale">2.1 Architecture globale</a></li>
+                            <li><a href="#structure-projet">2.2 Structure du projet</a></li>
+                            <li><a href="#flux-donnees">2.3 Flux de données</a></li>
+                            <li><a href="#modeles-donnees">2.4 Modèles de données</a></li>
+                            <li><a href="#securite">2.5 Sécurité et authentification</a></li>
+                            <li><a href="#integrations">2.6 Intégrations externes</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#fonctionnalites">3. Présentation des fonctionnalités implémentées</a>
+                        <ul>
+                            <li><a href="#gestion-utilisateurs">3.1 Gestion des utilisateurs</a></li>
+                            <li><a href="#gestion-spectacles">3.2 Gestion des spectacles</a></li>
+                            <li><a href="#systeme-reservation">3.3 Système de réservation</a></li>
+                            <li><a href="#gestion-tickets">3.4 Gestion des tickets</a></li>
+                            <li><a href="#interface">3.5 Interface utilisateur</a></li>
+                            <li><a href="#api">3.6 API et extensibilité</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#code-examples">4. Exemples de code et explications techniques</a>
+                        <ul>
+                            <li><a href="#modeles-code">4.1 Modèles et relations</a></li>
+                            <li><a href="#vues-code">4.2 Vues et contrôleurs</a></li>
+                            <li><a href="#formulaires-code">4.3 Formulaires et validation</a></li>
+                            <li><a href="#templates-code">4.4 Templates et rendu</a></li>
+                            <li><a href="#pdf-code">4.5 Génération de PDF</a></li>
+                            <li><a href="#paiement-code">4.6 Intégration du paiement</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#analyse-comparative">5. Analyse comparative des frameworks</a>
+                        <ul>
+                            <li><a href="#django">5.1 Django (Python)</a></li>
+                            <li><a href="#rails">5.2 Ruby on Rails (Ruby)</a></li>
+                            <li><a href="#laravel">5.3 Laravel (PHP)</a></li>
+                            <li><a href="#express">5.4 Express.js (Node.js)</a></li>
+                            <li><a href="#tableau-comparatif">5.5 Tableau comparatif</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#difficultés">6. Difficultés rencontrées et solutions</a>
+                    </li>
+                    <li>
+                        <a href="#optimisations">7. Optimisations et améliorations futures</a>
+                    </li>
+                    <li><a href="#conclusion">8. Conclusion</a></li>
+                    <li><a href="#references">9. Références</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="section" id="introduction">
+            <h2><i class="fas fa-info-circle"></i> 1. Introduction</h2>
+            
+            <p>Le monde du divertissement a connu une transformation numérique significative ces dernières années. Les systèmes de réservation en ligne sont devenus indispensables pour les théâtres, cinémas, salles de concert et autres lieux de divertissement. Ce rapport présente le développement d'un système de réservation complet basé sur le framework Django.</p>
+            
+            <p>Le projet "ShowTime" est une application web qui permet aux utilisateurs de consulter les spectacles disponibles, de réserver des places, de payer en ligne et de recevoir des tickets numériques. L'application offre également des fonctionnalités d'administration pour la gestion des spectacles, des réservations et des utilisateurs.</p>
+            
+            <div class="info-box">
+                <p><strong>Objectifs du projet :</strong></p>
+                <ul>
+                    <li>Créer une plateforme intuitive pour la réservation de billets de spectacles</li>
+                    <li>Faciliter la gestion des spectacles et des réservations pour les administrateurs</li>
+                    <li>Offrir une expérience utilisateur fluide et sécurisée</li>
+                    <li>Implémenter un système de paiement en ligne</li>
+                    <li>Générer des tickets électroniques au format PDF</li>
+                </ul>
+            </div>
+            
+            <p>Ce rapport analyse en détail l'architecture technique, les fonctionnalités implémentées et compare l'utilisation de Django avec d'autres frameworks populaires. Il vise à fournir une compréhension approfondie des choix technologiques et des solutions mises en œuvre pour répondre aux défis rencontrés.</p>
+        </div>
+
+        <div class="section" id="architecture">
+            <h2><i class="fas fa-sitemap"></i> Description détaillée de l'architecture</h2>
+            
+            <h3>1. Architecture globale</h3>
+            <p>Le système de réservation est construit selon le modèle d'architecture MVC (Modèle-Vue-Contrôleur) implémenté par Django, un framework web Python:</p>
+            <ul>
+                <li><strong>Modèle (Model)</strong>: Définit la structure des données et la logique métier</li>
+                <li><strong>Vue (View)</strong>: Gère l'affichage et la présentation des données à l'utilisateur</li>
+                <li><strong>Contrôleur (Controller)</strong>: Traite les requêtes utilisateur et coordonne les interactions entre le modèle et la vue</li>
+            </ul>
+
+            <h3>2. Structure du projet</h3>
+            <p>Le projet est organisé de la manière suivante:</p>
+            <pre class="bg-light p-3">
+reservation_system/          # Dossier racine du projet
+│
+├── reservation_system/      # Configuration principale du projet Django
+│   ├── settings.py          # Paramètres globaux du projet
+│   ├── urls.py              # Configuration des URLs du projet
+│   └── wsgi.py              # Point d'entrée pour le serveur web
+│
+└── shows/                   # Application principale
+    ├── models.py            # Définition des modèles de données
+    ├── views.py             # Logique de traitement des requêtes
+    ├── forms.py             # Formulaires pour la saisie de données
+    ├── admin.py             # Configuration de l'interface d'administration
+    └── templates/           # Templates HTML pour l'affichage
+        └── shows/           # Templates spécifiques à l'application
+            ├── base.html    # Template de base avec éléments communs
+            ├── show_list.html # Liste des spectacles
+            ├── ticket.html  # Affichage d'un ticket
+            └── ...          # Autres templates
+            </pre>
+
+            <h3>3. Flux de données</h3>
+            <p>Le flux de données dans l'application suit le schéma suivant:</p>
+            <ol>
+                <li>L'utilisateur effectue une requête HTTP vers une URL spécifique</li>
+                <li>L'URL est routée vers la vue appropriée dans <code>views.py</code></li>
+                <li>La vue interagit avec les modèles pour récupérer ou modifier les données</li>
+                <li>La vue rend un template HTML en y injectant les données nécessaires</li>
+                <li>Le template généré est renvoyé à l'utilisateur comme réponse HTTP</li>
+            </ol>
+
+            <h3 id="modeles-donnees">2.4 Modèles de données</h3>
+            <p>Les principales entités du système sont organisées selon un schéma relationnel soigneusement conçu :</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4>User (Utilisateur)</h4>
+                        <p>Modèle utilisateur personnalisé qui étend <code>AbstractUser</code> de Django:</p>
+                        <ul>
+                            <li><strong>username</strong>: Nom d'utilisateur unique</li>
+                            <li><strong>email</strong>: Adresse email unique</li>
+                            <li><strong>first_name</strong>: Prénom</li>
+                            <li><strong>last_name</strong>: Nom de famille</li>
+                            <li><strong>date_joined</strong>: Date d'inscription</li>
+                            <li><strong>is_active</strong>: État du compte (actif/inactif)</li>
+                            <li><strong>is_staff</strong>: Droits d'administration</li>
+                        </ul>
+                        <p>Ce modèle personnalisé permet d'ajouter des champs et méthodes spécifiques tout en conservant les fonctionnalités d'authentification de Django.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4>Show (Spectacle)</h4>
+                        <p>Représente un événement ou spectacle disponible:</p>
+                        <ul>
+                            <li><strong>title</strong>: Titre du spectacle</li>
+                            <li><strong>description</strong>: Description détaillée</li>
+                            <li><strong>image</strong>: Affiche ou image du spectacle</li>
+                            <li><strong>date</strong>: Date et heure du spectacle</li>
+                            <li><strong>location</strong>: Lieu du spectacle</li>
+                            <li><strong>price</strong>: Prix du billet</li>
+                            <li><strong>category</strong>: Catégorie (théâtre, cinéma, concert, etc.)</li>
+                        </ul>
+                        <p>Des méthodes personnalisées permettent de calculer la disponibilité des places et les statistiques de vente.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4>Seat (Siège)</h4>
+                        <p>Représente un siège disponible pour un spectacle:</p>
+                        <ul>
+                            <li><strong>show</strong>: Relation ForeignKey vers Show</li>
+                            <li><strong>seat_number</strong>: Numéro ou identifiant du siège</li>
+                            <li><strong>row</strong>: Rangée du siège</li>
+                            <li><strong>category</strong>: Catégorie du siège (Standard, Premium, VIP)</li>
+                            <li><strong>is_reserved</strong>: État de réservation</li>
+                        </ul>
+                        <p>Ce modèle permet une gestion précise des places disponibles et réservées pour chaque spectacle.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4>Reservation (Réservation)</h4>
+                        <p>Enregistre les réservations effectuées par les utilisateurs:</p>
+                        <ul>
+                            <li><strong>user</strong>: Relation ForeignKey vers User</li>
+                            <li><strong>show</strong>: Relation ForeignKey vers Show</li>
+                            <li><strong>seat</strong>: Relation ForeignKey vers Seat</li>
+                            <li><strong>reservation_date</strong>: Date et heure de la réservation</li>
+                            <li><strong>payment_confirmed</strong>: Statut du paiement</li>
+                            <li><strong>payment_id</strong>: Identifiant de transaction (Stripe)</li>
+                        </ul>
+                        <p>Ce modèle central relie les utilisateurs, spectacles et sièges, tout en gardant une trace des paiements.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h4 class="mt-4">Diagramme de relations</h4>
+            <p>Les relations entre ces modèles peuvent être résumées comme suit:</p>
+            <pre class="code-block">
+ User (1) ------ (*) Reservation (*) ------ (1) Show
+                        |
+                        |
+                        v
+                      (1) Seat
+            </pre>
+            <p>Cette structure permet de maintenir l'intégrité référentielle des données et facilite les requêtes complexes.</p>
+            
+            <h3 id="securite">2.5 Sécurité et authentification</h3>
+            
+            <p>La sécurité est un aspect fondamental du système de réservation, particulièrement pour protéger les données personnelles et les transactions financières.</p>
+            
+            <div class="info-box">
+                <h4>Mécanismes de sécurité implémentés</h4>
+                <ul>
+                    <li><strong>Authentification utilisateur</strong>: Système robuste basé sur Django Auth avec support de sessions sécurisées</li>
+                    <li><strong>Protection CSRF</strong>: Middleware Django pour prévenir les attaques Cross-Site Request Forgery</li>
+                    <li><strong>Hashage des mots de passe</strong>: Algorithmes de hashage sécurisés avec sel (PBKDF2)</li>
+                    <li><strong>Contrôle d'accès</strong>: Décorateurs <code>@login_required</code> et vérification des permissions</li>
+                    <li><strong>Sécurité des paiements</strong>: Intégration avec Stripe qui respecte la norme PCI DSS</li>
+                    <li><strong>Protection XSS</strong>: Échappement automatique des variables dans les templates</li>
+                    <li><strong>Validation des données</strong>: Validation côté serveur pour toutes les entrées utilisateur</li>
+                </ul>
+            </div>
+            
+            <p>Le système d'authentification gère plusieurs niveaux d'accès:</p>
+            <ul>
+                <li><strong>Utilisateurs anonymes</strong>: Accès limité aux pages publiques (accueil, catalogue des spectacles)</li>
+                <li><strong>Utilisateurs authentifiés</strong>: Accès aux fonctionnalités de réservation, tickets et profil</li>
+                <li><strong>Administrateurs</strong>: Accès complet à l'interface d'administration et aux fonctionnalités de gestion</li>
+            </ul>
+            
+            <p>Pour la gestion des mots de passe, le système offre:</p>
+            <ul>
+                <li>Réinitialisation par email avec tokens sécurisés à usage unique</li>
+                <li>Exigences de complexité minimale pour les mots de passe</li>
+                <li>Vérification de l'ancien mot de passe lors des changements</li>
+            </ul>
+
+            <h3 id="integrations">2.6 Intégrations externes</h3>
+            <p>Le système intègre plusieurs services et bibliothèques externes pour étendre ses fonctionnalités:</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4><i class="fab fa-stripe"></i> Stripe</h4>
+                        <p>Intégration complète de l'API Stripe pour:</p>
+                        <ul>
+                            <li>Traitement sécurisé des paiements par carte</li>
+                            <li>Gestion des transactions et remboursements</li>
+                            <li>Webhook pour confirmation de paiement</li>
+                            <li>Interface de paiement moderne et sécurisée</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4><i class="far fa-file-pdf"></i> xhtml2pdf</h4>
+                        <p>Bibliothèque Python pour:</p>
+                        <ul>
+                            <li>Conversion des templates HTML en PDF</li>
+                            <li>Génération dynamique de tickets</li>
+                            <li>Support des images et styles CSS</li>
+                            <li>Codes QR intégrés pour validation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4><i class="fab fa-bootstrap"></i> Bootstrap</h4>
+                        <p>Framework CSS utilisé pour:</p>
+                        <ul>
+                            <li>Interface responsive adaptée à tous les appareils</li>
+                            <li>Composants UI pré-conçus (cards, modals, forms)</li>
+                            <li>Grille flexible pour la mise en page</li>
+                            <li>Thème personnalisé aux couleurs de l'application</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box">
+                        <h4><i class="fab fa-font-awesome"></i> Font Awesome</h4>
+                        <p>Bibliothèque d'icônes pour:</p>
+                        <ul>
+                            <li>Icônes distinctives pour les catégories de spectacles</li>
+                            <li>Amélioration de l'expérience utilisateur</li>
+                            <li>Cohérence visuelle à travers l'application</li>
+                            <li>Identification rapide des fonctionnalités</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="note-box mt-4">
+                <p><strong>Note d'intégration:</strong> Ces services et bibliothèques ont été choisis pour leur fiabilité, leur documentation de qualité et leur compatibilité avec Django. L'intégration a été réalisée de manière à minimiser les dépendances et faciliter les mises à jour futures.</p>
+            </div>
+        </div>
+
+        <div class="section" id="fonctionnalites">
+            <h2><i class="fas fa-cogs"></i> 3. Présentation des fonctionnalités implémentées</h2>
+            
+            <div class="feature-box" id="gestion-utilisateurs">
+                <h3>3.1 Gestion des utilisateurs</h3>
+                <p>Le système offre une gestion complète des utilisateurs avec plusieurs niveaux d'accès et de nombreuses fonctionnalités :</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4><i class="fas fa-user-plus"></i> Inscription et Authentification</h4>
+                        <ul>
+                            <li>Formulaire d'inscription avec validation des données</li>
+                            <li>Connexion sécurisée avec sessions persistantes</li>
+                            <li>Réinitialisation de mot de passe par email</li>
+                            <li>Protection contre les tentatives de connexion répétées</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4><i class="fas fa-user-edit"></i> Gestion du profil</h4>
+                        <ul>
+                            <li>Modification des informations personnelles</li>
+                            <li>Changement de mot de passe avec validation</li>
+                            <li>Possibilité d'ajouter une photo de profil</li>
+                            <li>Historique des activités récentes</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h4><i class="fas fa-chart-line"></i> Tableau de bord personnel</h4>
+                        <ul>
+                            <li>Statistiques sur les réservations effectuées</li>
+                            <li>Récapitulatif des spectacles à venir</li>
+                            <li>Historique des paiements</li>
+                            <li>Suivi des préférences de catégories</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4><i class="fas fa-user-shield"></i> Gestion des rôles</h4>
+                        <ul>
+                            <li>Différenciation entre utilisateurs standard et administrateurs</li>
+                            <li>Permissions spécifiques pour chaque type d'utilisateur</li>
+                            <li>Interface d'administration dédiée pour les gestionnaires</li>
+                            <li>Journal des actions administratives</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="img-container mt-4">
+                    <img src="https://via.placeholder.com/800x400.png?text=Capture+d%27%C3%A9cran+du+profil+utilisateur" class="img-fluid border" alt="Interface de profil utilisateur">
+                    <p class="img-caption">Figure 1: Interface de profil utilisateur avec statistiques et options de modification</p>
+                </div>
+            </div>
+            
+            <div class="feature-box">
+                <h3>2. Gestion des spectacles</h3>
+                <ul>
+                    <li>Affichage des spectacles disponibles avec filtrage par catégorie</li>
+                    <li>Détails complets d'un spectacle (description, date, lieu, prix)</li>
+                    <li>Catégorisation des spectacles (théâtre, cinéma, concert, etc.)</li>
+                    <li>Interface d'administration pour créer/modifier/supprimer des spectacles</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box">
+                <h3>3. Système de réservation</h3>
+                <ul>
+                    <li>Sélection de sièges pour un spectacle</li>
+                    <li>Processus de paiement intégré avec Stripe</li>
+                    <li>Confirmation de réservation par email</li>
+                    <li>Historique des réservations pour l'utilisateur</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box">
+                <h3>4. Gestion des tickets</h3>
+                <ul>
+                    <li>Génération de tickets numériques après paiement</li>
+                    <li>Affichage des tickets avec tous les détails pertinents</li>
+                    <li>Téléchargement des tickets au format PDF</li>
+                    <li>Fonctionnalité de génération de tickets de démonstration pour les tests</li>
+                    <li>Codes QR sur les tickets pour la validation</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box">
+                <h3>5. Interface utilisateur</h3>
+                <ul>
+                    <li>Design responsive adapté à tous les appareils</li>
+                    <li>Navigation intuitive avec fil d'Ariane</li>
+                    <li>Icônes distinctives pour les différentes catégories de spectacles</li>
+                    <li>Messages de notification pour informer l'utilisateur des actions réussies/échouées</li>
+                    <li>Interface de paiement sécurisée et moderne</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="code-examples">
+            <h2><i class="fas fa-code"></i> 4. Exemples de code et explications techniques</h2>
+            
+            <p>Cette section présente des extraits de code clés du projet accompagnés d'explications détaillées sur leur fonctionnement et leur intégration dans l'architecture globale.</p>
+            
+            <div class="feature-box" id="modeles-code">
+                <h3>4.1 Modèles et relations</h3>
+                
+                <p>Voici un extrait du fichier <code>models.py</code> qui définit les modèles principaux et leurs relations :</p>
+                
+                <pre class="code-block">
+# models.py
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+
+class User(AbstractUser):
+    """Modèle utilisateur personnalisé étendant AbstractUser"""
+    
+    def __str__(self):
+        return self.username
+
+class Show(models.Model):
+    CATEGORY_CHOICES = [
+        ('concert', 'Concert'),
+        ('theatre', 'Théâtre'),
+        ('cinema', 'Cinéma'),
+        ('comedy', 'Comédie'),
+        ('dance', 'Danse'),
+        ('other', 'Autre'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField(max_length=500)
+    image = models.ImageField(upload_to='show_images/', null=True, blank=True)
+    date = models.DateTimeField()
+    location = models.CharField(max_length=200)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    
+    def __str__(self):
+        return self.title
+    
+    def available_seats(self):
+        """Retourne le nombre de sièges disponibles"""
+        total_seats = Seat.objects.filter(show=self).count()
+        reserved_seats = Seat.objects.filter(show=self, is_reserved=True).count()
+        return total_seats - reserved_seats
+
+class Seat(models.Model):
+    show = models.ForeignKey(Show, on_delete=models.CASCADE, related_name='seats')
+    seat_number = models.CharField(max_length=10)  # Ex: "A-12"
+    is_reserved = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.show.title} - Siège {self.seat_number}"
+
+class Reservation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
+    show = models.ForeignKey(Show, on_delete=models.CASCADE)
+    seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
+    reservation_date = models.DateTimeField(default=timezone.now)
+    payment_confirmed = models.BooleanField(default=False)
+    payment_id = models.CharField(max_length=100, blank=True, null=True)  # ID de transaction Stripe
+    
+    def __str__(self):
+        return f"Réservation de {self.user.username} pour {self.show.title}"
+                </pre>
+                
+                <p>Ces modèles constituent le cœur de l'application. Les points clés à noter sont :</p>
+                <ul>
+                    <li>L'utilisation de <code>AbstractUser</code> pour personnaliser le modèle utilisateur</li>
+                    <li>Les relations <code>ForeignKey</code> pour établir les liens entre modèles</li>
+                    <li>L'utilisation de <code>related_name</code> pour faciliter les requêtes inverses</li>
+                    <li>Les méthodes personnalisées comme <code>available_seats()</code> pour encapsuler la logique métier</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box" id="vues-code">
+                <h3>4.2 Vues et contrôleurs</h3>
+                
+                <p>Voici un exemple de vues implémentant la gestion des tickets :</p>
+                
+                <pre class="code-block">
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.contrib import messages
+from django.utils import timezone
+import datetime
+import random
+from xhtml2pdf import pisa
+from io import BytesIO
+
+from .models import Show, Seat, Reservation
+
+@login_required
+def my_bookings(request):
+    """Affiche toutes les réservations de l'utilisateur connecté"""
+    reservations = Reservation.objects.filter(user=request.user).order_by('-reservation_date')
+    return render(request, 'shows/my_bookings.html', {'reservations': reservations})
+
+@login_required
+def ticket_view(request, reservation_id):
+    """Affiche le ticket pour une réservation spécifique"""
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    return render(request, 'shows/ticket.html', {'reservation': reservation})
+
+@login_required
+def download_ticket_pdf(request, reservation_id):
+    """Génère et télécharge un ticket au format PDF"""
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
+    # Rendu du template HTML avec le contexte
+    template = get_template('shows/ticket_pdf.html')
+    html = template.render({'reservation': reservation})
+    
+    # Création du PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        # Génération de la réponse HTTP avec le PDF
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        filename = f"ticket_{reservation.id}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse('Erreur lors de la génération du PDF', status=400)
+
+@login_required
+def generate_demo_tickets(request):
+    """Génère 10 tickets de démonstration avec différentes catégories"""
+    # Vérification de l'authentification
+    if not request.user.is_authenticated:
+        messages.error(request, "Vous devez être connecté pour générer des tickets.")
+        return redirect('login')
+    
+    # Récupérer tous les spectacles
+    shows = Show.objects.all()
+    if not shows.exists():
+        messages.error(request, "Aucun spectacle n'est disponible pour générer des tickets.")
+        return redirect('show_list')
+    
+    # Liste des catégories pour les démonstrations
+    categories = ['concert', 'theatre', 'cinema', 'comedy', 'dance']
+    
+    # Générer 10 tickets de démonstration
+    created_reservations = []
+    for i in range(10):
+        # Code de génération des tickets...
+    
+    messages.success(request, f"10 tickets de démonstration ont été générés avec succès!")
+    return redirect('my_bookings')
+                </pre>
+                
+                <p>Points importants à noter dans ces vues :</p>
+                <ul>
+                    <li>L'utilisation du décorateur <code>@login_required</code> pour sécuriser l'accès</li>
+                    <li>L'utilisation de <code>get_object_or_404</code> pour gérer élégamment les cas où l'objet n'existe pas</li>
+                    <li>La validation des permissions (vérification que l'utilisateur est bien propriétaire de la réservation)</li>
+                    <li>L'intégration de <code>xhtml2pdf</code> pour la génération de PDF</li>
+                    <li>L'utilisation de messages pour informer l'utilisateur du résultat des actions</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box" id="templates-code">
+                <h3>4.3 Templates et rendu</h3>
+                
+                <p>Voici un extrait du template utilisé pour afficher un ticket :</p>
+                
+                <pre class="code-block">
+{% extends 'shows/base.html' %}
+
+{% block title %}Ticket #{{ reservation.id }} - {{ reservation.show.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card ticket-card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">ShowTime - Ticket #{{ reservation.id }}</h3>
+                        <div>
+                            <a href="{% url 'download_ticket' reservation.id %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-download"></i> Télécharger PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="card-title">{{ reservation.show.title }}</h4>
+                            <p class="text-muted">{{ reservation.show.category|title }}</p>
+                            
+                            <div class="ticket-details mt-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p><strong><i class="far fa-calendar-alt"></i> Date</strong></p>
+                                        <p>{{ reservation.show.date|date:"l d F Y" }}</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><strong><i class="far fa-clock"></i> Heure</strong></p>
+                                        <p>{{ reservation.show.date|date:"H:i" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <p><strong><i class="fas fa-map-marker-alt"></i> Lieu</strong></p>
+                                        <p>{{ reservation.show.location }}</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><strong><i class="fas fa-chair"></i> Siège</strong></p>
+                                        <p>{{ reservation.seat.seat_number }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <div class="qr-code border p-2 d-inline-block">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TicketID:{{ reservation.id }}" 
+                                     alt="QR Code" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-footer mt-4 pt-3 border-top">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ reservation.user.username }}
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <small class="text-muted">
+                                    <i class="fas fa-receipt"></i> Réservation #{{ reservation.id }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+                </pre>
+                
+                <p>Ce template démontre :</p>
+                <ul>
+                    <li>L'héritage de templates avec <code>{% extends %}</code> pour une structure cohérente</li>
+                    <li>L'utilisation des filtres Django pour formater les dates</li>
+                    <li>L'intégration de Font Awesome pour les icônes</li>
+                    <li>L'utilisation de Bootstrap pour une mise en page responsive</li>
+                    <li>L'intégration d'un code QR généré dynamiquement</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box" id="pdf-code">
+                <h3>4.4 Génération de PDF</h3>
+                
+                <p>Le code suivant montre comment les PDFs sont générés à partir de templates HTML :</p>
+                
+                <pre class="code-block">
+from django.template.loader import get_template
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+from io import BytesIO
+
+def render_to_pdf(template_src, context_dict):
+    """Fonction utilitaire pour générer un PDF à partir d'un template HTML"""
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    
+    # Conversion HTML vers PDF
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+@login_required
+def download_ticket_pdf(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
+    # Contexte pour le template
+    context = {
+        'reservation': reservation,
+        'user': request.user,
+        'qr_code_url': f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TicketID:{reservation.id}"
+    }
+    
+    # Génération du PDF
+    pdf = render_to_pdf('shows/ticket_pdf.html', context)
+    
+    if pdf:
+        # Configuration de la réponse pour téléchargement
+        filename = f"ticket_{reservation.id}.pdf"
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    # Gestion d'erreur
+    messages.error(request, "Une erreur est survenue lors de la génération du PDF.")
+    return redirect('view_ticket', reservation_id=reservation_id)
+                </pre>
+                
+                <p>Cette implémentation utilise :</p>
+                <ul>
+                    <li>La bibliothèque <code>xhtml2pdf</code> pour convertir le HTML en PDF</li>
+                    <li>Des objets <code>BytesIO</code> pour manipuler les données binaires en mémoire</li>
+                    <li>Des en-têtes HTTP appropriés pour déclencher le téléchargement du fichier</li>
+                    <li>Une gestion d'erreur robuste pour informer l'utilisateur en cas de problème</li>
+                </ul>
+            </div>
+            
+            <div class="feature-box" id="paiement-code">
+                <h3>4.5 Intégration du paiement</h3>
+                
+                <p>L'intégration de Stripe pour le traitement des paiements est implémentée comme suit :</p>
+                
+                <pre class="code-block">
+import stripe
+from django.conf import settings
+from django.views import View
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+# Configuration de l'API Stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+class PaymentView(View):
+    def post(self, request, pk):
+        show = get_object_or_404(Show, pk=pk)
+        seat_id = request.POST.get('seat_id')
+        seat = get_object_or_404(Seat, id=seat_id, show=show)
+        
+        if seat.is_reserved:
+            messages.error(request, "Ce siège est déjà réservé.")
+            return redirect('show_detail', pk=pk)
+        
+        # Création de la session de paiement Stripe
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'eur',
+                        'unit_amount': int(show.price * 100),  # Conversion en centimes
+                        'product_data': {
+                            'name': show.title,
+                            'description': f"Siège {seat.seat_number} - {show.date.strftime('%d/%m/%Y %H:%M')}",
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                metadata={
+                    'show_id': show.id,
+                    'seat_id': seat.id,
+                    'user_id': request.user.id,
+                },
+                mode='payment',
+                success_url=request.build_absolute_uri(f'/payment/success/?session_id={{CHECKOUT_SESSION_ID}}'),
+                cancel_url=request.build_absolute_uri(f'/shows/{show.id}/'),
+            )
+            
+            # Création de la réservation en attente de paiement
+            reservation = Reservation.objects.create(
+                user=request.user,
+                show=show,
+                seat=seat,
+                payment_confirmed=False,
+                payment_id=checkout_session.id
+            )
+            
+            # Marquer le siège comme réservé temporairement
+            seat.is_reserved = True
+            seat.save()
+            
+            # Redirection vers la page de paiement Stripe
+            return redirect(checkout_session.url)
+            
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la création de la session de paiement: {str(e)}")
+            return redirect('show_detail', pk=pk)
+
+class PaymentSuccessView(View):
+    def get(self, request):
+        session_id = request.GET.get('session_id')
+        
+        if not session_id:
+            messages.error(request, "Paramètre de session manquant.")
+            return redirect('home')
+        
+        try:
+            # Vérification du statut de la session
+            session = stripe.checkout.Session.retrieve(session_id)
+            
+            # Mise à jour de la réservation si le paiement est réussi
+            if session.payment_status == 'paid':
+                reservation = Reservation.objects.get(payment_id=session_id)
+                reservation.payment_confirmed = True
+                reservation.save()
+                
+                messages.success(request, "Paiement effectué avec succès! Votre ticket est maintenant disponible.")
+                return redirect('view_ticket', reservation_id=reservation.id)
+            else:
+                messages.warning(request, "Le paiement est en attente de confirmation.")
+                return redirect('home')
+                
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la vérification du paiement: {str(e)}")
+            return redirect('home')
+                </pre>
+                
+                <p>Cette implémentation illustre :</p>
+                <ul>
+                    <li>L'utilisation de l'API Stripe pour créer des sessions de paiement</li>
+                    <li>La gestion du flux de paiement avec redirection vers Stripe et retour</li>
+                    <li>La vérification du statut du paiement et la mise à jour de la réservation</li>
+                    <li>L'utilisation des métadonnées pour lier la transaction aux données de l'application</li>
+                    <li>Une gestion d'erreur complète pour assurer la fiabilité du processus</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="analyse-comparative">
+            
+            <p>Cette section présente une comparaison entre Django (utilisé pour ce projet) et un autre framework populaire pour le développement web: Ruby on Rails.</p>
+            
+            <h3>Django (Python)</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="pros"><i class="fas fa-thumbs-up"></i> Avantages</h4>
+                    <ul>
+                        <li><strong>Admin intégré</strong>: Interface d'administration prête à l'emploi avec peu de configuration</li>
+                        <li><strong>ORM puissant</strong>: Manipulation facile des données sans SQL direct</li>
+                        <li><strong>Sécurité</strong>: Protection intégrée contre les vulnérabilités web courantes (XSS, CSRF)</li>
+                        <li><strong>Batteries included</strong>: La plupart des fonctionnalités sont fournies dans le framework</li>
+                        <li><strong>Documentation</strong>: Documentation extensive et communauté active</li>
+                        <li><strong>Python</strong>: Langage très lisible et populaire pour le ML/data science</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="cons"><i class="fas fa-thumbs-down"></i> Inconvénients</h4>
+                    <ul>
+                        <li><strong>Monolithique</strong>: Difficile de n'utiliser que certaines parties du framework</li>
+                        <li><strong>Configuration</strong>: Plus verbeux pour certaines tâches simples</li>
+                        <li><strong>Migration</strong>: Les migrations peuvent parfois être complexes</li>
+                        <li><strong>Asynchrone</strong>: Support asynchrone récent et moins mature</li>
+                        <li><strong>Performances</strong>: Légèrement moins performant que des frameworks plus légers</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Ruby on Rails (Ruby)</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="pros"><i class="fas fa-thumbs-up"></i> Avantages</h4>
+                    <ul>
+                        <li><strong>Convention over configuration</strong>: Moins de code pour des tâches courantes</li>
+                        <li><strong>Productivité</strong>: Développement rapide grâce aux générateurs et helpers</li>
+                        <li><strong>Écosystème gems</strong>: Large bibliothèque d'extensions prêtes à l'emploi</li>
+                        <li><strong>Communauté</strong>: Communauté active et ressources abondantes</li>
+                        <li><strong>Tests</strong>: Culture de test très ancrée</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="cons"><i class="fas fa-thumbs-down"></i> Inconvénients</h4>
+                    <ul>
+                        <li><strong>Performance</strong>: Généralement moins performant que Django</li>
+                        <li><strong>Courbe d'apprentissage</strong>: La "magie" de Rails peut être difficile à comprendre</li>
+                        <li><strong>Popularité</strong>: Moins populaire que Python/Django récemment</li>
+                        <li><strong>Flexibilité</strong>: Moins flexible pour les projets non-conventionnels</li>
+                        <li><strong>Déploiement</strong>: Configuration de déploiement souvent plus complexe</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Tableau comparatif</h3>
+            <table class="comparison-table table-striped">
+                <thead>
+                    <tr>
+                        <th>Critère</th>
+                        <th>Django (Python)</th>
+                        <th>Ruby on Rails (Ruby)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Philosophie</td>
+                        <td>Explicite plutôt qu'implicite</td>
+                        <td>Convention plutôt que configuration</td>
+                    </tr>
+                    <tr>
+                        <td>Structure</td>
+                        <td>MTV (Model-Template-View)</td>
+                        <td>MVC (Model-View-Controller)</td>
+                    </tr>
+                    <tr>
+                        <td>ORM</td>
+                        <td>Django ORM</td>
+                        <td>Active Record</td>
+                    </tr>
+                    <tr>
+                        <td>Admin</td>
+                        <td>Admin intégré puissant</td>
+                        <td>Via gems (comme ActiveAdmin)</td>
+                    </tr>
+                    <tr>
+                        <td>Templating</td>
+                        <td>Django Template Language</td>
+                        <td>ERB, HAML, Slim</td>
+                    </tr>
+                    <tr>
+                        <td>Courbe d'apprentissage</td>
+                        <td>Modérée</td>
+                        <td>Abrupte au début, puis productive</td>
+                    </tr>
+                    <tr>
+                        <td>Performance</td>
+                        <td>Bonne</td>
+                        <td>Moyenne</td>
+                    </tr>
+                    <tr>
+                        <td>Scalabilité</td>
+                        <td>Très bonne</td>
+                        <td>Bonne</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Difficultés rencontrées dans ce projet</h3>
+            <p>Durant le développement du système de réservation avec Django, plusieurs défis ont été rencontrés:</p>
+            <ul>
+                <li><strong>Intégration de xhtml2pdf</strong>: Des problèmes d'importation du module ont été rencontrés initialement</li>
+                <li><strong>Configuration des URLs</strong>: Certaines erreurs NoReverseMatch ont nécessité une révision des configurations d'URL</li>
+                <li><strong>Gestion des utilisateurs</strong>: L'implémentation d'un modèle utilisateur personnalisé a demandé une attention particulière</li>
+                <li><strong>Génération de tickets</strong>: La création de PDFs bien formatés a demandé plusieurs itérations</li>
+                <li><strong>Interface de paiement</strong>: L'intégration de Stripe a nécessité une compréhension approfondie de l'API</li>
+            </ul>
+            
+            <h3>Conclusion sur le choix de framework</h3>
+            <p>Pour ce projet de système de réservation, Django s'est révélé être un excellent choix pour plusieurs raisons:</p>
+            <ul>
+                <li>L'admin Django a considérablement accéléré la gestion des données</li>
+                <li>Le système d'authentification intégré a simplifié la gestion des utilisateurs</li>
+                <li>L'ORM a facilité les requêtes complexes sans SQL direct</li>
+                <li>Le système de templates a permis une séparation claire entre logique et présentation</li>
+                <li>La documentation complète a aidé à résoudre rapidement les problèmes rencontrés</li>
+            </ul>
+            <p>Bien que Ruby on Rails aurait également été adapté à ce type de projet, la familiarité avec Python et la robustesse de Django en ont fait le choix le plus pertinent pour notre contexte.</p>
+        </div>
+    </div>
+
+    <div class="footer text-center">
+        <div class="container">
+            <p>Rapport technique - Système de Réservation ShowTime</p>
+            <p><small>Généré le 29 mai 2025</small></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
